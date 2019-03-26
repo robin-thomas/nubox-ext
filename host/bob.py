@@ -49,6 +49,7 @@ class Bob(object):
 #     label = 'hello'
 #     plaintext = 'The admiration I had for your work has completely evaporated!'
 #     encrypted = Alice.encrypt(label, plaintext)
+#     Bob.grant(label)
 #
 #     message = Bob.decrypt(label, encrypted)
 #     print(message)

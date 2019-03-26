@@ -23,17 +23,16 @@ chrome.runtime.onMessageExternal.addListener(
   (message, sender, sendResponse) => {
     console.log(message);
 
-    switch (message) {
-      case 'isHostRunning':
-        const msgId = Math.random().toString(36).substring(7);
+    const msgId = Math.random().toString(36).substring(7);
+    const msg = JSON.parse(message);
 
-        registerCallback(msgId, sendResponse);
-        port.postMessage({
-          id: msgId,
-          cmd: message,
-        });
+    registerCallback(msgId, sendResponse);
+    port.postMessage({
+      id: msgId,
+      cmd: msg.cmd,
+      args: msg.args,
+    });
 
-        return true;
-    }
+    return true;
   }
 );
