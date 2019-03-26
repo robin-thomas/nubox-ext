@@ -10,7 +10,7 @@ if [ "$(uname -s)" = "Darwin" ]; then
   if [ "$(whoami)" = "root" ]; then
     TARGET_DIR="/Library/Google/Chrome/NativeMessagingHosts"
   else
-    TARGET_DIR="$HOME/Library/Application Support/Google/Chrome/NativeMessagingHosts"
+    TARGET_DIR="$HOME/Library/Application\ Support/Google/Chrome/NativeMessagingHosts"
   fi
 else
   if [ "$(whoami)" = "root" ]; then
@@ -36,3 +36,4 @@ HOST_PATH=$DIR/nubox.py
 chmod o+r "$TARGET_DIR/$HOST_NAME.json"
 cat $TARGET_DIR/$HOST_NAME.json
 echo "Native messaging host $HOST_NAME has been installed."
+echo "$TARGET_DIR/$HOST_NAME.json"

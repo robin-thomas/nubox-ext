@@ -1,9 +1,9 @@
 {
   "name": "com.google.chrome.nubox",
   "description": "nuBox Host",
-  "path": "//home//robin//nubox-ext//host//nubox.py",
+  "path": "HOST_PATH",
   "type": "stdio",
   "allowed_origins": [
-    "chrome-extension://chakfniokepheebjfjobbaeadeaodlhk/"
+    "chrome-extension://chpgpcpmmhkmiopdebifmjbeldjboafc/"
   ]
 }

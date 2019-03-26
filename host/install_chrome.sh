@@ -10,7 +10,7 @@ if [ "$(uname -s)" = "Darwin" ]; then
   if [ "$(whoami)" = "root" ]; then
     TARGET_DIR="/Library/Google/Chrome/NativeMessagingHosts"
   else
-    TARGET_DIR="$HOME/Library/Application Support/Google/Chrome/NativeMessagingHosts"
+    TARGET_DIR="$HOME/Library/Application\ Support/Google/Chrome/NativeMessagingHosts"
   fi
 else
   if [ "$(whoami)" = "root" ]; then
@@ -30,9 +30,15 @@ cp "$DIR/$HOST_NAME.json" "$TARGET_DIR"
 
 # Update host path in the manifest.
 HOST_PATH=$DIR/nubox.py
-# sed -i -e "s/HOST_PATH/$HOST_PATH/" "$TARGET_DIR/$HOST_NAME.json"
+ESCAPED_HOST_PATH="${HOST_PATH//\//\\/}"
+sed -i -e "s/HOST_PATH/$ESCAPED_HOST_PATH/" "$TARGET_DIR/$HOST_NAME.json"
 
 # Set permissions for the manifest so that all users can read it.
 chmod o+r "$TARGET_DIR/$HOST_NAME.json"
-cat $TARGET_DIR/$HOST_NAME.json
-echo "Native messaging host $HOST_NAME has been installed."
+cat "$TARGET_DIR/$HOST_NAME.json"
+
+if [ -f "$TARGET_DIR/$HOST_NAME.json" ]; then
+  echo "Native messaging host $HOST_NAME has been installed at $TARGET_DIR/$HOST_NAME.json"
+else
+  echo "Native messaging host $HOST_NAME has NOT been installed."
+fi
