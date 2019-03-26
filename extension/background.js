@@ -22,11 +22,13 @@ chrome.runtime.onMessageExternal.addListener(
     switch (message) {
       case 'isHostRunning':
         const msgId = Math.random().toString(36).substring(7);
+
         registerCallback(msgId, sendResponse);
         port.postMessage({
           id: msgId,
           cmd: 'isHostRunning',
         });
+
         return true;
     }
   }
