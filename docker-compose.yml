@@ -11,7 +11,7 @@ services:
       - "8151:8151"
     build:
       context: ./
-      dockerfile: nucypher/deploy/docker/Dockerfile
+      dockerfile: host/nucypher/deploy/docker/Dockerfile
     volumes:
       - ~/.local/share/nucypher:/nucypher
     stdin_open: true
@@ -27,7 +27,7 @@ services:
       - "11151:11151"
     build:
       context: ./
-      dockerfile: nucypher/deploy/docker/Dockerfile
+      dockerfile: host/nucypher/deploy/docker/Dockerfile
     volumes:
       - ~/.local/share/nucypher:/nucypher
     stdin_open: true

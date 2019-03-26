@@ -6,6 +6,8 @@ const registerCallback = (id, callback) => {
 };
 
 port.onMessage.addListener((response) => {
+  console.log(response);
+
   if (response.id !== undefined &&
       callbacks[response.id] !== undefined) {
     callbacks[response.id]({
@@ -19,6 +21,8 @@ port.onMessage.addListener((response) => {
 
 chrome.runtime.onMessageExternal.addListener(
   (message, sender, sendResponse) => {
+    console.log(message);
+
     switch (message) {
       case 'isHostRunning':
         const msgId = Math.random().toString(36).substring(7);
@@ -26,7 +30,7 @@ chrome.runtime.onMessageExternal.addListener(
         registerCallback(msgId, sendResponse);
         port.postMessage({
           id: msgId,
-          cmd: 'isHostRunning',
+          cmd: message,
         });
 
         return true;
