@@ -61,6 +61,35 @@ def parse_message(message_json):
         else:
             send_message('{"id": %s, "type": "success", "result": true}' % (escape_message(msg_id)))
 
+    elif msg_cmd == 'encrypt':
+        plaintext = message['args'][0]
+        label = message['args'][1]
+
+        try:
+            encrypted = Alice.encrypt(label, plaintext)
+            send_message('{"id": %s, "type": "success", "result": %s}' % (escape_message(msg_id), escape_message(encrypted)))
+        except:
+            send_message('{"id": %s, "type": "failure"}' % (escape_message(msg_id)))
+
+    elif msg_cmd == 'grant':
+        label = message['args'][0]
+
+        if Bob.grant(label) == True:
+            send_message('{"id": %s, "type": "success"}' % (escape_message(msg_id)))
+        else:
+            send_message('{"id": %s, "type": "failure"}' % (escape_message(msg_id)))
+
+    elif msg_cmd == 'decrypt':
+        encrypted = message['args'][0]
+        label = message['args'][1]
+
+        try:
+            plaintext = Bob.decrypt(label, encrypted)
+            send_message('{"id": %s, "type": "success", "result": %s}' % (escape_message(msg_id), escape_message(plaintext)))
+        except:
+            send_message('{"id": %s, "type": "failure"}' % (escape_message(msg_id)))
+
+
 if __name__ == '__main__':
     dir = os.path.dirname(os.path.realpath(__file__))
     log_file = dir + '/err.log'

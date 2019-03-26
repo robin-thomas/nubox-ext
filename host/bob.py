@@ -33,17 +33,16 @@ class Bob(object):
 
     @staticmethod
     def decrypt(label, encrypted):
-        if Bob.grant(label):
-            retrieval = {}
-            retrieval["label"] = label
-            retrieval["policy_encrypting_key"] = Alice.get_policy_encrypting_key(label)
-            retrieval["alice_verifying_key"] = Alice.get_verifying_key()
-            retrieval["message_kit"] = encrypted
+        retrieval = {}
+        retrieval["label"] = label
+        retrieval["policy_encrypting_key"] = Alice.get_policy_encrypting_key(label)
+        retrieval["alice_verifying_key"] = Alice.get_verifying_key()
+        retrieval["message_kit"] = encrypted
 
-            retrieved = requests.post(f"{Bob.bob}/retrieve", data=json.dumps(retrieval))
-            plaintext = json.loads(retrieved.content)['result']['cleartexts'][0]
+        retrieved = requests.post(f"{Bob.bob}/retrieve", data=json.dumps(retrieval))
+        plaintext = json.loads(retrieved.content)['result']['cleartexts'][0]
 
-            return plaintext
+        return plaintext
 
 
 # if __name__ == '__main__':
