@@ -9,7 +9,8 @@ port.onMessage.addListener((response) => {
   if (response.id !== undefined &&
       callbacks[response.id] !== undefined) {
     callbacks[response.id]({
-      type: 'success',
+      type: response.type,
+      result: response.result,
     });
 
     delete callbacks[response.id];
@@ -18,20 +19,15 @@ port.onMessage.addListener((response) => {
 
 chrome.runtime.onMessageExternal.addListener(
   (message, sender, sendResponse) => {
-    if (message === 'version') {
-      const manifest = chrome.runtime.getManifest();
-      sendResponse({
-        type: 'success',
-        version: manifest.version
-      });
-      return true;
-    } else if (message === 'host') {
-      registerCallback('hello', sendResponse);
-      port.postMessage({
-        id: 'hello',
-        cmd: 'more',
-      });
-      return true;
+    switch (message) {
+      case 'isHostRunning':
+        const msgId = Math.random().toString(36).substring(7);
+        registerCallback(msgId, sendResponse);
+        port.postMessage({
+          id: msgId,
+          cmd: 'isHostRunning',
+        });
+        return true;
     }
   }
 );

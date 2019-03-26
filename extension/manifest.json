@@ -4,7 +4,7 @@
   "version": "0.1",
   "author": "Robin Thomas",
   "background": {
-    "scripts": ["background.js"]
+    "scripts": ["background.js", "jquery-3.3.1.slim.min.js"]
   },
   "externally_connectable": {
     "matches": [

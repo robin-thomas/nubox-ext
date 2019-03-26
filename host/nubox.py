@@ -10,6 +10,9 @@ import sys
 import json
 import requests
 
+from alice import Alice
+from bob import Bob
+
 enrico = "http://localhost:5151"
 
 # Helper function that sends a message to the webapp.
@@ -22,6 +25,24 @@ def send_message(message):
 
 def escape_message(message):
   return "\"" + message + "\""
+
+def parse_message(message):
+    msg_id = message['id']
+
+    msg_cmd = message['cmd']
+    if msg_cmd == 'isHostRunning':
+        output = false
+        try:
+            alice_verifying_key = Alice.get_verifying_key()
+            bob_encrypting_key, bob_verifying_key = Bob.get_keys()
+            output = true
+        except:
+            output = false
+
+        if output == false:
+            send_message('{"id": %s, type: "failure", result: false}' % (escape_message(msg_id)))
+        else:
+            send_message('{"id": %s, type: "success", result: true}' % (escape_message(msg_id)))
 
 # Thread that reads messages from the webapp.
 def read_thread_func():
@@ -37,8 +58,10 @@ def read_thread_func():
 
     # Read the text (JSON object) of the message.
     text = sys.stdin.read(text_length).decode('utf-8')
-    abc = json.loads(text)
-    send_message('{"id": %s}' % (escape_message(abc['id'])))
+    message = json.loads(text)
+
+    parse_msg(message)
+    # send_message('{"id": %s}' % (escape_message(abc['id'])))
 
 if __name__ == '__main__':
   read_thread_func()
