@@ -8,6 +8,9 @@
 import struct
 import sys
 import json
+import requests
+
+enrico = "http://localhost:5151"
 
 # Helper function that sends a message to the webapp.
 def send_message(message):

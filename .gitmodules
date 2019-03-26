@@ -1,0 +1,6 @@
+[submodule "nucypher"]
+	path = nucypher
+	url = https://github.com/robin-thomas/nucypher
+[submodule "pyUmbral"]
+	path = pyUmbral
+	url = https://github.com/nucypher/pyUmbral

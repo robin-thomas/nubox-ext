@@ -1,0 +1,34 @@
+version: '3'
+
+services:
+  nucypher-alice:
+    command: /usr/local/bin/nucypher alice run --dev --federated-only --network devnet --teacher-uri 18.222.119.242:9151
+    environment:
+      - NUCYPHER_SENTRY_LOGS=0
+    image: nucypher:latest
+    container_name: nucypher-alice
+    ports:
+      - "8151:8151"
+    build:
+      context: ./
+      dockerfile: nucypher/deploy/docker/Dockerfile
+    volumes:
+      - ~/.local/share/nucypher:/nucypher
+    stdin_open: true
+    tty: true
+
+  nucypher-bob:
+    command: nucypher bob run --dev --federated-only --network devnet --teacher-uri 18.222.119.242:9151
+    environment:
+      - NUCYPHER_SENTRY_LOGS=0
+    image: nucypher:latest
+    container_name: nucypher-bob
+    ports:
+      - "11151:11151"
+    build:
+      context: ./
+      dockerfile: nucypher/deploy/docker/Dockerfile
+    volumes:
+      - ~/.local/share/nucypher:/nucypher
+    stdin_open: true
+    tty: true
