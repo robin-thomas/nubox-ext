@@ -1,1 +1,7 @@
 
+[submodule "host/pyUmbral"]
+	path = host/pyUmbral
+	url = https://github.com/nucypher/pyUmbral
+[submodule "host/nucypher"]
+	path = host/nucypher
+	url = https://github.com/robin-thomas/nucypher
