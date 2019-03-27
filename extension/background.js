@@ -28,19 +28,44 @@ chrome.declarativeContent.onPageChanged.removeRules(undefined, function() {
   }]);
 });
 
+const readBlock = (file, path, offset, blockSize) => {
+  const blob = file.slice(offset, blockSize + offset);
+
+  const r = new FileReader();
+  r.onload = function(e) {
+    const block = r.result;
+    const blockB64 = Buffer.from(block).toString('base64');
+
+    const label = path;
+
+    // Encrypt it using host protocol.
+    port.postMessage({
+      id: msgId,
+      cmd: 'encrypt',
+      args: [blockB64, label],
+    });
+  };
+
+  r.readAsArrayBuffer(blob);
+};
+
 chrome.runtime.onMessageExternal.addListener((message, sender, sendResponse) => {
   console.log(message);
 
   const msg = JSON.parse(message);
 
   const msgId = Math.random().toString(36).substring(7);
-
   registerCallback(msgId, sendResponse);
-  port.postMessage({
-    id: msgId,
-    cmd: msg.cmd,
-    args: msg.args,
-  });
+
+  if (msg.cmd === 'readBlock') {
+    readBlock(msg.args.file, msg.args.path, msg.args.offset, msg.args.blockSize);
+  } else {
+    port.postMessage({
+      id: msgId,
+      cmd: msg.cmd,
+      args: msg.args,
+    });
+  }
 
   return true;
 });
