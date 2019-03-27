@@ -1,5 +1,29 @@
 const getKeysButton = document.getElementById('get-keys');
 
+window.onload = (e) => {
+  $('.offline').css('visibility', 'hidden');
+  $('.online').css('visibility', 'hidden');
+
+  // Check whether the nucypher docker containers are running.
+  chrome.runtime.sendMessage({
+    cmd: "isHostRunning",
+    args: [],
+  }, (response) => {
+    console.log(response);
+
+    if (!response) {
+      $('.offline').css('visibility', 'visible');
+      $('#get-keys').prop('disabled', true);
+    } else if (response.type === 'failure') {
+      $('.offline').css('visibility', 'visible');
+      $('#get-keys').prop('disabled', true);
+    } else {
+      $('.online').css('visibility', 'visible');
+      $('#get-keys').prop('disabled', false);
+    }
+  });
+}
+
 const getBobsKeys = () => {
   return new Promise((resolve, reject) => {
     chrome.runtime.sendMessage({

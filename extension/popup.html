@@ -2,6 +2,14 @@
   <html>
     <head>
       <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css">
+      <style>
+        .dot {height:10px;width:10px;border-radius:50%;display:inline-block}
+        .online-dot {background-color:#28a745}
+        .offline-dot {background-color:#dc3545}
+        .online {position:absolute;color:#28a745}
+        .offline {position:absolute;color:#dc3545}
+        .offline,.online {display:inline-block;font-size:14px;float:right;text-align:right;width:50%;visibility:hidden;}
+      </style>
     </head>
     <body>
       <div class="card" style="width: 18rem;">
@@ -9,6 +17,8 @@
           <h5 class="card-title">
             <img class="card-img-top" src="icons/logo_32x32.png" style="width:32px;height:32px" />
             nuBox
+            <p class="online"><span class="dot online-dot"></span>&nbsp;Online</p>
+            <p class="offline"><span class="dot offline-dot"></span>&nbsp;Offline</p>
           </h5>
           <p class="card-text">This extension compliments <a href="https://github.com/robin-thomas/nubox" target="_blank">nuBox</a> to get
             NuCypher working on the browser side! Yay!
