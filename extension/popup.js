@@ -3,6 +3,7 @@ const getKeysButton = document.getElementById('get-keys');
 window.onload = (e) => {
   $('.offline').css('visibility', 'hidden');
   $('.online').css('visibility', 'hidden');
+  $('#get-keys').prop('disabled', true);
 
   // Check whether the nucypher docker containers are running.
   chrome.runtime.sendMessage({
@@ -13,10 +14,8 @@ window.onload = (e) => {
 
     if (!response) {
       $('.offline').css('visibility', 'visible');
-      $('#get-keys').prop('disabled', true);
     } else if (response.type === 'failure') {
       $('.offline').css('visibility', 'visible');
-      $('#get-keys').prop('disabled', true);
     } else {
       $('.online').css('visibility', 'visible');
       $('#get-keys').prop('disabled', false);
