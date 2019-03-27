@@ -1,10 +1,11 @@
 {
   "manifest_version": 2,
   "name": "nuBox",
+  "description": "This extension compliments nuBox to get NuCypher working on the browser side! Yay!",
   "version": "0.1",
   "author": "Robin Thomas",
   "background": {
-    "scripts": ["background.js", "jquery-3.3.1.slim.min.js"]
+    "scripts": ["background.js"]
   },
   "externally_connectable": {
     "matches": [
@@ -12,5 +13,24 @@
       "http://localhost:4000/*"
     ]
   },
-  "permissions": ["nativeMessaging"]
+  "permissions": [
+    "declarativeContent",
+    "tabs",
+    "nativeMessaging",
+    "*://*/*"
+  ],
+  "icons": {
+    "16": "icons/logo_16x16.png",
+    "48": "icons/logo_48x48.png",
+    "128": "icons/logo_128x128.png"
+  },
+  "page_action": {
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icons/logo_16x16.png",
+      "32": "icons/logo_32x32.png",
+      "48": "icons/logo_48x48.png",
+      "128": "icons/logo_128x128.png"
+    }
+  }
 }

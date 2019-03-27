@@ -17,16 +17,14 @@ class Bob(object):
         return bob_encrypting_key, bob_verifying_key
 
     @staticmethod
-    def grant(label):
-        bob_encrypting_key, bob_verifying_key = Bob.get_keys()
-
+    def grant(label, bob_encrypting_key, bob_verifying_key, expiration):
         grant = {}
         grant["bob_verifying_key"] = bob_verifying_key
         grant["bob_encrypting_key"] = bob_encrypting_key
         grant["m"] = 1
         grant["n"] = 1
         grant["label"] = label
-        grant["expiration"] = "2020-02-10T22:17:01.445418Z"
+        grant["expiration"] = expiration #"2020-02-10T22:17:01.445418Z"
 
         response = requests.put(f"{Alice.alice}/grant", data=json.dumps(grant))
         return response.status_code == 200

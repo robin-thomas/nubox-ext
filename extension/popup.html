@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+  <html>
+    <head>
+      <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css">
+    </head>
+    <body>
+      <div class="card" style="width: 18rem;">
+        <div class="card-body">
+          <h5 class="card-title">
+            <img class="card-img-top" src="icons/logo_32x32.png" style="width:32px;height:32px" />
+            nuBox
+          </h5>
+          <p class="card-text">This extension compliments <a href="https://github.com/robin-thomas/nubox" target="_blank">nuBox</a> to get
+            NuCypher working on the browser side! Yay!
+          </p>
+          <div class="form-group">
+            <label for="popup-bek"><b>Bob's Encrypting key:</b></label>
+            <input type="text" class="form-control" id="popup-bek" placeholder="" readonly>
+          </div>
+          <div class="form-group">
+            <label for="popup-bek"><b>Bob's Verifying key:</b></label>
+            <input type="text" class="form-control" id="popup-bvk" placeholder="" readonly>
+          </div>
+          <button type="button" class="btn btn-primary" id="get-keys">Get Bob's keys</button>
+        </div>
+        <ul class="list-group list-group-flush">
+          <li class="list-group-item">&copy; Robin Thomas | <a href="https://github.com/robin-thomas/nubox-ext" target="_blank">Github</a></li>
+        </ul>
+      </div>
+    </body>
+    <script type="text/javascript" src="jquery-3.3.1.slim.min.js"></script>
+    <script type="text/javascript" src="popup.js"></script>
+  </html>

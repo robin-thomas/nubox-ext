@@ -19,23 +19,22 @@ from bob import Bob
 # Helper function that sends a message to the webapp.
 def send_message(message):
     # Write message size.
-    sys.stdout.write(struct.pack('I', len(message)).decode('utf-8'))
+    message_utf8 = message.encode('utf-8')
+    sys.stdout.buffer.write(struct.pack('i', len(message_utf8)))
     # Write the message itself.
-    sys.stdout.write(message)
-    sys.stdout.flush()
+    sys.stdout.buffer.write(message_utf8)
+    sys.stdout.buffer.flush()
 
 # read messages from the webapp.
 def read_message():
     # Read the message length (first 4 bytes).
-    text_length_bytes = sys.stdin.read(4)
-    if len(text_length_bytes) == 0:
-        sys.exit(0)
+    text_length_bytes = sys.stdin.buffer.read(4)
 
     # Unpack message length as 4 byte integer.
-    text_length = struct.unpack('i', bytes(bytearray(text_length_bytes, 'utf-8')))[0]
+    text_length = struct.unpack('i', text_length_bytes)[0]
 
     # Read the text (JSON object) of the message.
-    text = sys.stdin.read(text_length)
+    text = sys.stdin.buffer.read(text_length).decode('utf-8')
 
     return text
 
@@ -61,6 +60,22 @@ def parse_message(message_json):
         else:
             send_message('{"id": %s, "type": "success", "result": true}' % (escape_message(msg_id)))
 
+    elif msg_cmd == "bob_keys":
+        output = {}
+        output["id"] = msg_id
+
+        try:
+            bob_encrypting_key, bob_verifying_key = Bob.get_keys()
+
+            output["type"] = "success"
+            output["result"] = {}
+            output["result"]["bek"] = bob_encrypting_key
+            output["result"]["bvk"] = bob_verifying_key
+        except:
+            output["type"] = "failure"
+
+        send_message(json.dumps(output))
+
     elif msg_cmd == 'encrypt':
         plaintext = message['args'][0]
         label = message['args'][1]
@@ -72,9 +87,11 @@ def parse_message(message_json):
             send_message('{"id": %s, "type": "failure"}' % (escape_message(msg_id)))
 
     elif msg_cmd == 'grant':
-        label = message['args'][0]
-
-        if Bob.grant(label) == True:
+        if Bob.grant(label=message['args'][0],
+                     bob_encrypting_key=message['args'][1],
+                     bob_verifying_key=message['args'][2],
+                     expiration=message['args'][3]
+                     ) == True:
             send_message('{"id": %s, "type": "success"}' % (escape_message(msg_id)))
         else:
             send_message('{"id": %s, "type": "failure"}' % (escape_message(msg_id)))

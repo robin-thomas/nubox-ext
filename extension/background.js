@@ -19,20 +19,43 @@ port.onMessage.addListener((response) => {
   }
 });
 
-chrome.runtime.onMessageExternal.addListener(
-  (message, sender, sendResponse) => {
-    console.log(message);
+chrome.declarativeContent.onPageChanged.removeRules(undefined, function() {
+  chrome.declarativeContent.onPageChanged.addRules([{
+    conditions: [new chrome.declarativeContent.PageStateMatcher({
+      pageUrl: {urlMatches: '(localhost:4000)|nubox.herokuapp.com'},
+    })],
+    actions: [new chrome.declarativeContent.ShowPageAction()]
+  }]);
+});
 
-    const msgId = Math.random().toString(36).substring(7);
-    const msg = JSON.parse(message);
+chrome.runtime.onMessageExternal.addListener((message, sender, sendResponse) => {
+  console.log(message);
 
-    registerCallback(msgId, sendResponse);
-    port.postMessage({
-      id: msgId,
-      cmd: msg.cmd,
-      args: msg.args,
-    });
+  const msg = JSON.parse(message);
 
-    return true;
-  }
-);
+  const msgId = Math.random().toString(36).substring(7);
+
+  registerCallback(msgId, sendResponse);
+  port.postMessage({
+    id: msgId,
+    cmd: msg.cmd,
+    args: msg.args,
+  });
+
+  return true;
+});
+
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  console.log(message);
+
+  const msgId = Math.random().toString(36).substring(7);
+
+  registerCallback(msgId, sendResponse);
+  port.postMessage({
+    id: msgId,
+    cmd: message.cmd,
+    args: message.args,
+  });
+
+  return true;
+});
