@@ -5,7 +5,8 @@
   "version": "1.0",
   "author": "Robin Thomas",
   "background": {
-    "scripts": ["background.js"]
+    "scripts": ["background.js"],
+    "persistant": true
   },
   "externally_connectable": {
     "matches": [
@@ -17,7 +18,8 @@
     "declarativeContent",
     "tabs",
     "nativeMessaging",
-    "*://*/*"
+    "*://*/*",
+    "activeTab"
   ],
   "icons": {
     "128": "icons/logo_128x128.png"
@@ -27,5 +29,13 @@
     "default_icon": {
       "128": "icons/logo_128x128.png"
     }
-  }
+  },
+  "content_scripts": [{
+    "matches": [
+        "*://*/*"
+    ],
+    "js": ["content.js"],
+    "run_at": "document_end"
+  }],
+  "web_accessible_resources": ["nubox.js"]
 }
