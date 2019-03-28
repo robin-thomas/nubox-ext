@@ -1,38 +1,61 @@
-const EXTENSION_ID = 'chakfniokepheebjfjobbaeadeaodlhk';
+const nuBoxCallback = {
+  callbacks: {},
 
-const callExtension = (cmd, args) => {
-  return new Promise((resolve, reject) => {
-    let msg = JSON.stringify({
-      cmd: cmd,
-      args: args === undefined ? [] : args,
-    });
+  registerCallback: (msgId, callback) => {
+    callbacks[msgId] = {
+      resolve: callback.resolve,
+      reject: callback.reject,
+    };
+  },
 
-    chrome.runtime.sendMessage(EXTENSION_ID, msg, response => {
-      if (!response) {
-        reject(null);
-        return false;
-      } else if (response.type === 'failure') {
-        reject(response.result);
-        return false;
-      } else if (response.type === 'success') {
-        resolve(response.result);
-        return true;
-      }
+  sendCallback: (msgId, response) => {
+    const callback = callbacks[msgId];
+
+    if (!response) {
+      callback.reject(null);
+    } else if (response.type === 'failure') {
+      callback.reject(response.result);
+    } else if (response.type === 'success') {
+      callback.resolve(response.result);
+    }
+
+    delete callbacks[msgId];
+  },
+
+  callExtension: (cmd, args) => {
+    return new Promise((resolve, reject) => {
+      const msgId = Math.random().toString(36).substring(7);
+
+      nuBoxCallback.registerCallback(msgId, {
+        resolve: resolve,
+        reject: reject,
+      });
+
+      const event = new CustomEvent('nuBox.api.request', {
+        detail: {
+          msgId: msgId,
+          cmd: cmd,
+          args: args === undefined ? [] : args,
+        },
+        bubbles: true,
+      });
+      document.dispatchEvent(event);
     });
-  });
-}
+  },
+};
+
+// Add listener to wait for events from the injected script.
+document.addEventListener('nuBox.api.response', (data) => {
+  const response = data.detail;
+  nuBoxCallback.sendCallback(response.msgId, response.response);
+}, false);
+
 
 const nuBox = {
   checkForExtension: async () => {
-    if (chrome === undefined || chrome === null ||
-        chrome.runtime === undefined) {
-      throw new Error('You are not using a Chromium-based browser!');
-    }
-
     try {
-      await callExtension('isHostRunning');
+      await nuBoxCallback.callExtension('isHostRunning');
     } catch (err) {
-      console.log(err);
       if (err === null) {
         throw new Error('You do not have the nuBox chromium extension installed!');
       } else {
@@ -43,9 +66,7 @@ const nuBox = {
 
   grant: async (label, bob_encrypting_key, bob_verifying_key, expiration) => {
     try {
-      // TODO: Open up the UI and ask for user's permission.
-
-      await await callExtension('grant', [label, bob_encrypting_key, bob_verifying_key, expiration]);
+      await nuBoxCallback.callExtension('grant', [label, bob_encrypting_key, bob_verifying_key, expiration]);
     } catch (err) {
       throw err;
     }
@@ -53,7 +74,7 @@ const nuBox = {
 
   encrypt: async (plaintext, label) => {
     try {
-      return await callExtension('encrypt', [plaintext, label]);
+      return await nuBoxCallback.callExtension('encrypt', [plaintext, label]);
     } catch (err) {
       throw err;
     }
@@ -61,7 +82,7 @@ const nuBox = {
 
   decrypt: async (encrypted, label) => {
     try {
-      return await callExtension('decrypt', [encrypted, label]);
+      return await nuBoxCallback.callExtension('decrypt', [encrypted, label]);
     } catch (err) {
       throw err;
     }
@@ -70,7 +91,7 @@ const nuBox = {
   // reads the block from local fs and encrypts it with nucypher.
   readBlock: async (file, path, offset, blockSize) => {
     try {
-      return await callExtension('readBlock', {
+      return await nuBoxCallback.callExtension('readBlock', {
         file: file,
         path: path,
         offset: offset,
@@ -83,7 +104,7 @@ const nuBox = {
 
   getBobKeys: async () => {
     try {
-      return await callExtension('bob_keys', []);
+      return await nuBoxCallback.callExtension('bob_keys', []);
     } catch (err) {
       throw err;
     }

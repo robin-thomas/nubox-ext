@@ -49,6 +49,16 @@ const readBlock = (file, path, offset, blockSize) => {
   r.readAsArrayBuffer(blob);
 };
 
+const grant = (label) => {
+  // TODO: open up the grant popup.
+  // Ask for user permission.
+  // If the user approves, send it to the native host for approval.
+  // else, send back the "user rejected" failure message.
+};
+
+// TODO: remove this once the content script message passing
+// has been finalized and got working without compromising security
+// (need chrome research).
 chrome.runtime.onMessageExternal.addListener((message, sender, sendResponse) => {
   console.log(message);
 
@@ -70,17 +80,36 @@ chrome.runtime.onMessageExternal.addListener((message, sender, sendResponse) => 
   return true;
 });
 
+// From the nuBox content/popup script.
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   console.log(message);
+
+  let msg = null;
+  try {
+    msg = JSON.parse(message);
+  } catch (err) {
+    // from the popup script. already a json object.
+    msg = message;
+  }
 
   const msgId = Math.random().toString(36).substring(7);
 
   registerCallback(msgId, sendResponse);
-  port.postMessage({
-    id: msgId,
-    cmd: message.cmd,
-    args: message.args,
-  });
+
+  // Read a block of data from a local file,
+  // encrypt it using nucypher and return it back.
+  // TODO: give option to enable upload it to IPFS too.
+  if (msg.cmd === 'readBlock') {
+    readBlock(msg.args.file, msg.args.path, msg.args.offset, msg.args.blockSize);
+  } else if (msg.cmd === 'grant') {
+    grant(msg.args.label);
+  } else {
+    port.postMessage({
+      id: msgId,
+      cmd: msg.cmd,
+      args: msg.args,
+    });
+  }
 
   return true;
 });
