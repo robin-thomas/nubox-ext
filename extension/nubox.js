@@ -2,14 +2,14 @@ const nuBoxCallback = {
   callbacks: {},
 
   registerCallback: (msgId, callback) => {
-    callbacks[msgId] = {
+    nuBoxCallback.callbacks[msgId] = {
       resolve: callback.resolve,
       reject: callback.reject,
     };
   },
 
   sendCallback: (msgId, response) => {
-    const callback = callbacks[msgId];
+    const callback = nuBoxCallback.callbacks[msgId];
 
     if (!response) {
       callback.reject(null);
@@ -19,7 +19,7 @@ const nuBoxCallback = {
       callback.resolve(response.result);
     }
 
-    delete callbacks[msgId];
+    delete nuBoxCallback.callbacks[msgId];
   },
 
   callExtension: (cmd, args) => {

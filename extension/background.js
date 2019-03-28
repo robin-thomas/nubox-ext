@@ -49,48 +49,31 @@ const readBlock = (file, path, offset, blockSize) => {
   r.readAsArrayBuffer(blob);
 };
 
-const grant = (label) => {
-  // TODO: open up the grant popup.
-  // Ask for user permission.
+const grant = (msgId, message, sender) => {
+  // TODO: open up the grant popup which asks for user permission.
+
+  // chrome.tabs.create({
+  //   url: 'grant.html',
+  // });
+  console.log(sender);
+
+  // If the user rejects it, send back the failure message.
+  callbacks[msgId]({
+    type: 'failure',
+    result: 'User has reject the grant approval',
+  });
+
   // If the user approves, send it to the native host for approval.
-  // else, send back the "user rejected" failure message.
+  // port.postMessage({
+  //   id: msgId,
+  //   cmd: 'grant',
+  //   args: message.args,
+  // });
 };
-
-// TODO: remove this once the content script message passing
-// has been finalized and got working without compromising security
-// (need chrome research).
-chrome.runtime.onMessageExternal.addListener((message, sender, sendResponse) => {
-  console.log(message);
-
-  const msg = JSON.parse(message);
-
-  const msgId = Math.random().toString(36).substring(7);
-  registerCallback(msgId, sendResponse);
-
-  if (msg.cmd === 'readBlock') {
-    readBlock(msg.args.file, msg.args.path, msg.args.offset, msg.args.blockSize);
-  } else {
-    port.postMessage({
-      id: msgId,
-      cmd: msg.cmd,
-      args: msg.args,
-    });
-  }
-
-  return true;
-});
 
 // From the nuBox content/popup script.
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   console.log(message);
-
-  let msg = null;
-  try {
-    msg = JSON.parse(message);
-  } catch (err) {
-    // from the popup script. already a json object.
-    msg = message;
-  }
 
   const msgId = Math.random().toString(36).substring(7);
 
@@ -99,15 +82,15 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   // Read a block of data from a local file,
   // encrypt it using nucypher and return it back.
   // TODO: give option to enable upload it to IPFS too.
-  if (msg.cmd === 'readBlock') {
-    readBlock(msg.args.file, msg.args.path, msg.args.offset, msg.args.blockSize);
-  } else if (msg.cmd === 'grant') {
-    grant(msg.args.label);
+  if (message.cmd === 'readBlock') {
+    readBlock(message.args.file, message.args.path, message.args.offset, message.args.blockSize);
+  } else if (message.cmd === 'grant') {
+    grant(msgId, message.args, sender);
   } else {
     port.postMessage({
       id: msgId,
-      cmd: msg.cmd,
-      args: msg.args,
+      cmd: message.cmd,
+      args: message.args,
     });
   }
 

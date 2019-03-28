@@ -41,24 +41,40 @@ def read_message():
 def escape_message(message):
     return "\"" + message + "\""
 
+def is_host_running():
+    is_running = True
+
+    try:
+        alice_verifying_key = Alice.get_verifying_key()
+        bob_encrypting_key, bob_verifying_key = Bob.get_keys()
+    except:
+        is_running = False
+
+    return is_running
+
 def parse_message(message_json):
     message = json.loads(message_json)
     msg_id = message['id']
     msg_cmd = message['cmd']
 
-    if msg_cmd == "isHostRunning":
-        output = False
-        try:
-            alice_verifying_key = Alice.get_verifying_key()
-            bob_encrypting_key, bob_verifying_key = Bob.get_keys()
-            output = True
-        except:
-            output = False
+    # have a check to make sure that nucypher network is running.
+    # if not, fail.
+    if is_host_running() == False:
+        output = {}
+        output["id"] = msg_id
+        output["type"] = "failure"
+        output["result"] = "nuBox Host is not running"
 
-        if output == False:
-            send_message('{"id": %s, "type": "failure", "result": false}' % (escape_message(msg_id)))
-        else:
-            send_message('{"id": %s, "type": "success", "result": true}' % (escape_message(msg_id)))
+        send_message(json.dumps(output))
+        return
+
+    if msg_cmd == "isHostRunning":
+        output = {}
+        output["id"] = msg_id
+        output["type"] = "success"
+        output["result"] = "nuBox Host is running"
+
+        send_message(json.dumps(output))
 
     elif msg_cmd == "bob_keys":
         output = {}
