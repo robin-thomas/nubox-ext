@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+  <html>
+    <head>
+      <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css">
+      <style>
+        #card-nubox-url {font-size:13px}
+        #card-nubox-label {font-weight:bold;}
+      </style>
+    </head>
+    <body>
+      <div class="card" style="height:448px">
+        <div class="card-header">
+          <img class="card-img-top" src="icons/logo_128x128.png" style="width:32px;height:32px" />
+          <span>nuBox</span>
+        </div>
+        <div class="card-body">
+          <p class="card-text">You have a request for <b>grant proposal</b> from <span id="card-nubox-url"></span> for the label
+             <span id="card-nubox-label"></span>
+          </p>
+          <p class="card-text" style="font-weight:bold">Note: all data encrypted under this label will be accessible to the requester if you approve.</p>
+          <p class="card-text" style="font-size:13px;font-style:italic">If you have not triggered this request, please cancel it.</p>
+          <button type="button" class="btn btn-danger" id="nubox-grant-cancel">Cancel</button>
+          <button type="button" class="btn btn-primary" id="nubox-grant-confirm">Approve</button>
+        </div>
+        <ul class="list-group list-group-flush">
+          <li class="list-group-item">&copy; Robin Thomas | <a href="https://github.com/robin-thomas/nubox-ext" target="_blank">Github</a></li>
+        </ul>
+      </div>
+    </body>
+    <script type="text/javascript" src="jquery-3.3.1.slim.min.js"></script>
+  </html>

@@ -66,6 +66,19 @@ const nuBox = {
 
   grant: async (label, bob_encrypting_key, bob_verifying_key, expiration) => {
     try {
+      if (label === undefined || label === null) {
+        throw new Error('missing label in grant request');
+      }
+      if (bob_encrypting_key === undefined || bob_encrypting_key === null) {
+        throw new Error('missing bob\'s encrypting key in grant request');
+      }
+      if (bob_verifying_key === undefined || bob_verifying_key === null) {
+        throw new Error('missing bob\'s verifying key in grant request');
+      }
+      if (expiration === undefined || expiration === null) {
+        throw new Error('missing expiration in grant request');
+      }
+
       await nuBoxCallback.callExtension('grant', [label, bob_encrypting_key, bob_verifying_key, expiration]);
     } catch (err) {
       throw err;
@@ -74,6 +87,13 @@ const nuBox = {
 
   encrypt: async (plaintext, label) => {
     try {
+      if (plaintext === undefined || plaintext === null) {
+        throw new Error('missing plaintext in encrypt request');
+      }
+      if (label === undefined || label === null) {
+        throw new Error('missing label in encrypt request');
+      }
+
       return await nuBoxCallback.callExtension('encrypt', [plaintext, label]);
     } catch (err) {
       throw err;
@@ -82,6 +102,13 @@ const nuBox = {
 
   decrypt: async (encrypted, label) => {
     try {
+      if (encrypted === undefined || encrypted === null) {
+        throw new Error('missing encrypted in decrypt request');
+      }
+      if (label === undefined || label === null) {
+        throw new Error('missing label in decrypt request');
+      }
+
       return await nuBoxCallback.callExtension('decrypt', [encrypted, label]);
     } catch (err) {
       throw err;

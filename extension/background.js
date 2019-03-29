@@ -49,26 +49,43 @@ const readBlock = (file, path, offset, blockSize) => {
   r.readAsArrayBuffer(blob);
 };
 
-const grant = (msgId, message, sender) => {
-  // TODO: open up the grant popup which asks for user permission.
+const grant = (msgId, args, sender) => {
+  // open up the grant popup which asks for user permission.
+  const popup = window.open('grant.html', 'extension_popup',
+    `width=288,
+     height=448,
+     top=25,
+     left=25,
+     toolbar=no,
+     location=no,
+     status=yes,
+     scrollbars=no,
+     resizable=no,
+     status=no,
+     menubar=no,
+     directories=no`);
 
-  // chrome.tabs.create({
-  //   url: 'grant.html',
-  // });
-  console.log(sender);
-
-  // If the user rejects it, send back the failure message.
-  callbacks[msgId]({
-    type: 'failure',
-    result: 'User has reject the grant approval',
-  });
-
-  // If the user approves, send it to the native host for approval.
-  // port.postMessage({
-  //   id: msgId,
-  //   cmd: 'grant',
-  //   args: message.args,
-  // });
+  popup.addEventListener('load', (e) => {
+    popup.$('#card-nubox-url').html(sender.url);
+    popup.$('#card-nubox-label').html(args[0]);
+    popup.$('#nubox-grant-cancel').on('click', (e) => {
+      // If the user rejects it, send back the failure message.
+      callbacks[msgId]({
+        type: 'failure',
+        result: 'User has rejected the grant approval',
+      });
+      popup.close();
+    });
+    popup.$('#nubox-grant-confirm').on('click', (e) => {
+      // If the user approves, send it to the native host for approval.
+      port.postMessage({
+        id: msgId,
+        cmd: 'grant',
+        args: args,
+      });
+      popup.close();
+    });
+  }, false);
 };
 
 // From the nuBox content/popup script.
