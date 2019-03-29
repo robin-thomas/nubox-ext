@@ -27,14 +27,14 @@ await nuBox.isHostRunning();
 ```
 
 ###### encrypt
-This API call is used to encrypt a block of plaintext. Due to chrome limitations, it's recommended to keep under 256 KB for the plaintext size.
+This API call is used to encrypt a block of plaintext. Due to ![chrome](https://developer.chrome.com/extensions/nativeMessaging#native-messaging-host-protocol) limitations, it's recommended to keep under 256 KB for the plaintext size.
 ```js
 await nuBox.encrypt(plaintext, label, ipfs);
 ```
-It expects atleast two arguments: `plaintext` and `label`. `ipfs` is optional, and if it's set as true, the encrypted data will be uploaded to Infura IPFS and the IPFS hash will be returned. The encrypted data can be accessed by visiting: <`https://ipfs.infura.io/ipfs/<hash>/`>.
+It expects atleast two arguments: `plaintext` and `label`. `ipfs` is optional, and if it's set as true, the encrypted data will be uploaded to Infura IPFS and the IPFS hash will be returned. The encrypted data can be accessed by visiting: `https://ipfs.infura.io/ipfs/<hash>/`.
 
 ###### decrypt
-This API call is used to decrypt a block of encrypted text. Due to chrome limitations, it's recommended to keep under 256 KB for the encrypted size.
+This API call is used to decrypt a block of encrypted text. Due to ![chrome](https://developer.chrome.com/extensions/nativeMessaging#native-messaging-host-protocol) limitations, it's recommended to keep under 256 KB for the encrypted size.
 ```js
 await nuBox.decrypt(encrypted, label);
 ```
@@ -51,6 +51,7 @@ It expects four arguments: `label`, `bek`, `bvk` and `expiration`.
 * `expiration` is a ISO-8601 formatted datetime string (for example, **'2019-03-29 22:23:10'**).
 
 ![](http://oi64.tinypic.com/akae87.jpg)
+
 It'll open up a **grant** popup for the user to approve. It'll have the sender information and also details about the grant request. If the user approves this request, it'll be send to the NuCypher network for processing.
 
 ###### revoke
@@ -61,6 +62,7 @@ await nuBox.revoke(label);
 It expects one argument: `label`.
 
 ![](http://oi65.tinypic.com/2qd1h60.jpg)
+
 It'll open up a **revoke** popup for the user to approve. It'll have the sender information and also details about the revoke request. If the user approves this request, it'll be send to the NuCypher network for processing.
 
 ###### getBobKeys
@@ -98,7 +100,7 @@ You'll also need to install the *nuBox* chrome extension. Since it's not package
   ![](http://oi64.tinypic.com/k4714h.jpg)
 
 # Debugging issues
-* *nuBox* is tested only on version 3.6.0 of Python. Any different version can lead to unexpected outputs.
+* *nuBox* is tested only on version 3.6.0 of Python. Any different version might lead to unexpected outputs.
 * If your *Python* binary is not stored at `/usr/bin/python3.6`, make a symmlink to that location so that the host can run.
 * All run-time errors happening in the host will be stored at `host/err.log` along with the stack trace.
 
