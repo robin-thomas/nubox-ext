@@ -112,6 +112,29 @@ def parse_message(message_json):
         else:
             send_message('{"id": %s, "type": "failure"}' % (escape_message(msg_id)))
 
+    elif msg_cmd == 'revoke':
+        label = message['args'][0]
+
+        output = {}
+        output["id"] = msg_id
+
+        try:
+            policy_encrypting_key = Alice.get_policy_encrypting_key(label)
+        except:
+            output["type"] = "failure"
+            output["result"] = "failed to retrieve policy_encrypting_key for this label"
+
+        if (!("result" in output)):
+            try:
+                Alice.revoke(policy_encrypting_key)
+
+                output["type"] = "success"
+            except:
+                output["type"] = "failure"
+                output["result"] = "failed to revoke for this label"
+
+        send_message(json.dumps(output))
+
     elif msg_cmd == 'decrypt':
         encrypted = message['args'][0]
         label = message['args'][1]
