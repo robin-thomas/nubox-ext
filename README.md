@@ -10,13 +10,14 @@
     - [encrypt](#encrypt)
     - [decrypt](#decrypt)
     - [grant](#grant)
+    - [revoke](#revoke)
     - [getBobKeys](#getbobkeys)
 3. [Installation](#installation)
 
-#### Who is it for?
+# Who is it for?
 [NuCypher](https://www.nucypher.com/) is the go-to solution for anyone aiming to build privacy-rich applications on the blockchain. But it lacks a JavaScript library. Moreover, their codebase is written in Python, making it difficult to port over to the web side. **nuBox** chrome extension can solve these issues without you ever having to know about NuCypher at all! It even has an insanely simple API which it injects onto every website!
 
-#### API:
+# API:
 All API calls are available under **nuBox** namespace. All of them supports *[Promises](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise)*.
 
 ###### isHostRunning
@@ -68,7 +69,7 @@ This API call is used to get Bob's encrypting key and verifying key (both are pu
 await nuBox.getBobKeys();
 ```
 
-#### Installation:
+# Installation:
 **nuBox** packages all NuCypher dependencies into docker containers. All the user needs to have is *docker*, *docker-compose* and *chrome browser*.
 
 Run the below step to install the *nuBox* chrome **host**.
