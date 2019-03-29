@@ -76,7 +76,7 @@ const grant = (msgId, args, sender) => {
       // If the user rejects it, send back the failure message.
       callbacks[msgId]({
         type: 'failure',
-        result: 'User has rejected the grant approval',
+        result: 'User has rejected the grant request',
       });
       popup.close();
     });
@@ -85,6 +85,46 @@ const grant = (msgId, args, sender) => {
       port.postMessage({
         id: msgId,
         cmd: 'grant',
+        args: args,
+      });
+      popup.close();
+    });
+  }, false);
+};
+
+const revoke = (msgId, args, sender) => {
+  // open up the grant popup which asks for user permission.
+  const popup = window.open('revoke.html', 'extension_popup',
+    `width=340,
+     height=675,
+     top=25,
+     left=25,
+     toolbar=no,
+     location=no,
+     status=yes,
+     scrollbars=no,
+     resizable=no,
+     status=no,
+     menubar=no,
+     directories=no`);
+
+  popup.addEventListener('load', (e) => {
+    popup.$('#card-nubox-url').html(sender.url);
+    popup.$('#card-nubox-label').html(args[0]);
+
+    popup.$('#nubox-grant-cancel').on('click', (e) => {
+      // If the user rejects it, send back the failure message.
+      callbacks[msgId]({
+        type: 'failure',
+        result: 'User has rejected the revoke request',
+      });
+      popup.close();
+    });
+    popup.$('#nubox-grant-confirm').on('click', (e) => {
+      // If the user approves, send it to the native host for approval.
+      port.postMessage({
+        id: msgId,
+        cmd: 'revoke',
         args: args,
       });
       popup.close();
@@ -107,6 +147,8 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     readBlock(message.args.file, message.args.path, message.args.offset, message.args.blockSize);
   } else if (message.cmd === 'grant') {
     grant(msgId, message.args, sender);
+  } else if (message.cmd === 'revoke') {
+    revoke(msgId, message.args, sender);
   } else {
     port.postMessage({
       id: msgId,

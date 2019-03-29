@@ -85,6 +85,18 @@ const nuBox = {
     }
   },
 
+  revoke: async (label) => {
+    try {
+      if (label === undefined || label === null) {
+        throw new Error('missing label in revoke request');
+      }
+
+      await nuBoxCallback.callExtension('revoke', [label]);
+    } catch (err) {
+      throw err;
+    }
+  },
+
   encrypt: async (plaintext, label) => {
     try {
       if (plaintext === undefined || plaintext === null) {
