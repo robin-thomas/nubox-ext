@@ -103,14 +103,22 @@ def parse_message(message_json):
             send_message('{"id": %s, "type": "failure"}' % (escape_message(msg_id)))
 
     elif msg_cmd == 'grant':
-        if Bob.grant(label=message['args'][0],
-                     bob_encrypting_key=message['args'][1],
-                     bob_verifying_key=message['args'][2],
-                     expiration=message['args'][3]
-                     ) == True:
-            send_message('{"id": %s, "type": "success"}' % (escape_message(msg_id)))
+        response = Bob.grant(label=message['args'][0],
+                             bob_encrypting_key=message['args'][1],
+                             bob_verifying_key=message['args'][2],
+                             expiration=message['args'][3])
+
+        output = {}
+        output["id"] = msg_id
+
+        if response.status_code == 200:
+            output["type"] = "success"
+            output["result"] = True
         else:
-            send_message('{"id": %s, "type": "failure"}' % (escape_message(msg_id)))
+            output["type"] = "failure"
+            output["result"] = response.content.decode("utf-8")
+
+        send_message(json.dumps(output))
 
     elif msg_cmd == 'revoke':
         label = message['args'][0]

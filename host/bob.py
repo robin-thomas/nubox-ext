@@ -27,7 +27,7 @@ class Bob(object):
         grant["expiration"] = expiration #"2020-02-10T22:17:01.445418Z"
 
         response = requests.put(f"{Alice.alice}/grant", data=json.dumps(grant))
-        return response.status_code == 200
+        return response
 
     @staticmethod
     def decrypt(label, encrypted):
