@@ -27,14 +27,14 @@ await nuBox.isHostRunning();
 ```
 
 ###### encrypt
-This API call is used to encrypt a block of plaintext. Due to ![chrome](https://developer.chrome.com/extensions/nativeMessaging#native-messaging-host-protocol) limitations, it's recommended to keep under 256 KB for the plaintext size.
+This API call is used to encrypt a block of plaintext. Due to [chrome](https://developer.chrome.com/extensions/nativeMessaging#native-messaging-host-protocol) limitations, it's recommended to keep under 256 KB for the plaintext size.
 ```js
 await nuBox.encrypt(plaintext, label, ipfs);
 ```
 It expects atleast two arguments: `plaintext` and `label`. `ipfs` is optional, and if it's set as true, the encrypted data will be uploaded to Infura IPFS and the IPFS hash will be returned. The encrypted data can be accessed by visiting: `https://ipfs.infura.io/ipfs/<hash>/`.
 
 ###### decrypt
-This API call is used to decrypt a block of encrypted text. Due to ![chrome](https://developer.chrome.com/extensions/nativeMessaging#native-messaging-host-protocol) limitations, it's recommended to keep under 256 KB for the encrypted size.
+This API call is used to decrypt a block of encrypted text. Due to [chrome](https://developer.chrome.com/extensions/nativeMessaging#native-messaging-host-protocol) limitations, it's recommended to keep under 256 KB for the encrypted size.
 ```js
 await nuBox.decrypt(encrypted, label);
 ```
