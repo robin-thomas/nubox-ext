@@ -4,20 +4,32 @@
       <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css">
       <style>
         #card-nubox-url {font-size:13px}
-        #card-nubox-label {font-weight:bold;}
+        #card-nubox-label {font-weight:bold}
       </style>
     </head>
     <body>
-      <div class="card" style="height:448px">
+      <div class="card" style="height:100%">
         <div class="card-header">
           <img class="card-img-top" src="icons/logo_128x128.png" style="width:32px;height:32px" />
           <span>nuBox</span>
         </div>
         <div class="card-body">
-          <p class="card-text">You have a request for <b>grant proposal</b> from <span id="card-nubox-url"></span> for the label
+          <p class="card-text">You have a request for <b>grant proposal</b> from <<span id="card-nubox-url"></span>> for the label
              <span id="card-nubox-label"></span>
           </p>
-          <p class="card-text" style="font-weight:bold">Note: all data encrypted under this label will be accessible to the requester if you approve.</p>
+          <div class="form-group">
+            <label for="nubox-grant-bek"><b>Bob's Encrypting key:</b></label>
+            <input type="text" class="form-control" id="nubox-grant-bek" placeholder="" readonly>
+          </div>
+          <div class="form-group">
+            <label for="nubox-grant-bvk"><b>Bob's Verifying key:</b></label>
+            <input type="text" class="form-control" id="nubox-grant-bvk" placeholder="" readonly>
+          </div>
+          <div class="form-group">
+            <label for="nubox-grant-exp"><b>When will this grant expire:</b></label>
+            <input type="text" class="form-control" id="nubox-grant-exp" placeholder="" readonly>
+          </div>
+          <p class="card-text" style="font-weight:bold">Note: all data encrypted under this label will be accessible to Bob if you approve.</p>
           <p class="card-text" style="font-size:13px;font-style:italic">If you have not triggered this request, please cancel it.</p>
           <button type="button" class="btn btn-danger" id="nubox-grant-cancel">Cancel</button>
           <button type="button" class="btn btn-primary" id="nubox-grant-confirm">Approve</button>

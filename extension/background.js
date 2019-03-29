@@ -52,8 +52,8 @@ const readBlock = (file, path, offset, blockSize) => {
 const grant = (msgId, args, sender) => {
   // open up the grant popup which asks for user permission.
   const popup = window.open('grant.html', 'extension_popup',
-    `width=288,
-     height=448,
+    `width=340,
+     height=675,
      top=25,
      left=25,
      toolbar=no,
@@ -66,8 +66,12 @@ const grant = (msgId, args, sender) => {
      directories=no`);
 
   popup.addEventListener('load', (e) => {
+    popup.$('#nubox-grant-bek').val(args[1]);
+    popup.$('#nubox-grant-bvk').val(args[2]);
+    popup.$('#nubox-grant-exp').val(args[3]);
     popup.$('#card-nubox-url').html(sender.url);
     popup.$('#card-nubox-label').html(args[0]);
+
     popup.$('#nubox-grant-cancel').on('click', (e) => {
       // If the user rejects it, send back the failure message.
       callbacks[msgId]({
