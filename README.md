@@ -1,6 +1,17 @@
 # nuBox chrome extension
 ![](http://i67.tinypic.com/34ooa6h_th.png)
+
 [![Python 3.6](https://img.shields.io/badge/python-3.6-blue.svg)](https://www.python.org/downloads/release/python-360/) [![License](https://img.shields.io/badge/license-MIT-green.svg)](https://opensource.org/licenses/MIT)
+
+# Table of Contents
+1. [Who is it for?](#who-is-it-for)
+2. [API](#api)
+    - [isHostRunning](#ishostrunning)
+    - [encrypt](#encrypt)
+    - [decrypt](#decrypt)
+    - [grant](#grant)
+    - [getBobKeys](#getbobkeys)
+3. [Installation](#installation)
 
 #### Who is it for?
 [NuCypher](https://www.nucypher.com/) is the go-to solution for anyone aiming to build privacy-rich applications on the blockchain. But it lacks a JavaScript library. Moreover, their codebase is written in Python, making it difficult to port over to the web side. **nuBox** chrome extension can solve these issues without you ever having to know about NuCypher at all! It even has an insanely simple API which it injects onto every website!
@@ -43,6 +54,23 @@ This API call is used to get Bob's encrypting key and verifying key (both are pu
 ```js
 await nuBox.getBobKeys();
 ```
+
+#### Installation:
+**nuBox** packages all NuCypher dependencies into docker containers. All the user needs to have is *docker*, *docker-compose* and *chrome browser*.
+
+Run the below step to install the *nuBox* chrome host.
+```sh
+$ sudo docker-compose up -d
+$ ./host/install_chrome.sh
+```
+
+You'll also need to install the *nuBox* chrome extension. Since it's not packaged into Chrome Web Store, follow the below steps to install it.
+
+* Head over to **chrome://extensions**
+* Turn ON the *developer mode*
+* Click on "Load unpacked"
+* Select the *nuBox* extension directory and click "Ok"
+* You'll be able to see that *nuBox* chrome extension has been successfully loaded!
 
 License
 ----
