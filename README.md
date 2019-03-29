@@ -47,7 +47,20 @@ await nuBox.grant(label, bek, bvk, expiration);
 It expects four arguments: `label`, `bek`, `bvk` and `expiration`.
 * `bek` is *Bob's encrypting key* (which is a hex-encoded string). It can be retrieved using `getBobKeys` API.
 * `bvk` is *Bob's verifying key* (which is a hex-encoded string). It can be retrieved using `getBobKeys` API.
-* `expiration` is a ISO-8601 formatted datetime string (for example, **'2019-03-29T22:23:10.771093Z'**).
+* `expiration` is a ISO-8601 formatted datetime string (for example, **'2019-03-29 22:23:10'**).
+
+![](http://oi64.tinypic.com/akae87.jpg)
+It'll open up a **grant** popup for the user to approve. It'll have the sender information and also details about the grant request. If the user approves this request, it'll be send to the NuCypher network for processing.
+
+###### revoke
+This API call is used to invoke a revoke request waiting for user's permission to approve or reject the request.
+```js
+await nuBox.revoke(label);
+```
+It expects one argument: `label`.
+
+![](http://oi65.tinypic.com/2qd1h60.jpg)
+It'll open up a **revoke** popup for the user to approve. It'll have the sender information and also details about the revoke request. If the user approves this request, it'll be send to the NuCypher network for processing.
 
 ###### getBobKeys
 This API call is used to get Bob's encrypting key and verifying key (both are public keys) that will be used for granting access for Bob.
@@ -58,18 +71,21 @@ await nuBox.getBobKeys();
 #### Installation:
 **nuBox** packages all NuCypher dependencies into docker containers. All the user needs to have is *docker*, *docker-compose* and *chrome browser*.
 
-Run the below step to install the *nuBox* chrome host.
+Run the below step to install the *nuBox* chrome **host**.
 ```sh
+$ cd nubox-ext
 $ sudo docker-compose up -d
 $ ./host/install_chrome.sh
 ```
+
+*nuBox* host is written in Python 3.6. It also assumes that the python binary is at the location `/usr/bin/python3.6`
 
 You'll also need to install the *nuBox* chrome extension. Since it's not packaged into Chrome Web Store, follow the below steps to install it.
 
 * Head over to **chrome://extensions**
 * Turn ON the *developer mode*
 * Click on "Load unpacked"
-* Select the *nuBox* extension directory and click "Ok"
+* Select the *nuBox* extension directory (`nubox-ext/extension`) and click "Ok"
 * You'll be able to see that *nuBox* chrome extension has been successfully loaded!
 
 License

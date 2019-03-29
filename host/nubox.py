@@ -124,11 +124,12 @@ def parse_message(message_json):
             output["type"] = "failure"
             output["result"] = "failed to retrieve policy_encrypting_key for this label"
 
-        if (!("result" in output)):
+        if ("result" in output) == False:
             try:
                 Alice.revoke(policy_encrypting_key)
 
                 output["type"] = "success"
+                output["result"] = True
             except:
                 output["type"] = "failure"
                 output["result"] = "failed to revoke for this label"

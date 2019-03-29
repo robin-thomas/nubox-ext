@@ -50,6 +50,23 @@ const readBlock = (file, path, offset, blockSize) => {
 };
 
 const grant = (msgId, args, sender) => {
+  // Validate user input.
+  if (!(moment(args[3], 'YYYY-MM-DD HH:mm:ss', true).isValid())) {
+    callbacks[msgId]({
+      type: 'failure',
+      result: 'Invalid expiration date string (not ISO 8601)',
+    });
+    return;
+  }
+  if (moment().isAfter(args[3])) {
+    callbacks[msgId]({
+      type: 'failure',
+      result: 'Expiration date string is in the past',
+    });
+    return;
+  }
+  args[3] = moment(args[3]).format('YYYY-MM-DDTHH:mm:ss') + '.000000Z';
+
   // open up the grant popup which asks for user permission.
   const popup = window.open('grant.html', 'extension_popup',
     `width=340,
@@ -95,8 +112,8 @@ const grant = (msgId, args, sender) => {
 const revoke = (msgId, args, sender) => {
   // open up the grant popup which asks for user permission.
   const popup = window.open('revoke.html', 'extension_popup',
-    `width=340,
-     height=675,
+    `width=315,
+     height=455,
      top=25,
      left=25,
      toolbar=no,

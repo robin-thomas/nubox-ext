@@ -5,7 +5,7 @@
   "version": "1.0",
   "author": "Robin Thomas",
   "background": {
-    "scripts": ["background.js"],
+    "scripts": ["background.js", "moment.min.js"],
     "persistant": true
   },
   "externally_connectable": {
