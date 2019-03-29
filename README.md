@@ -89,6 +89,15 @@ You'll also need to install the *nuBox* chrome extension. Since it's not package
 * Select the *nuBox* extension directory (`nubox-ext/extension`) and click "Ok"
 * You'll be able to see that *nuBox* chrome extension has been successfully loaded!
 
+# Popup UI
+*nuBox* also comes with a popup UI that the user can use to interact it.
+- It will show the "online" status (online meaning it was able to connect to the NuCypher network).
+- Retrieve Bob's encrypting and verifying keys (it'll be enabled only if online).
+
+  ![](http://oi67.tinypic.com/286rd3a.jpg)
+  ![](http://oi64.tinypic.com/k4714h.jpg)
+# Debugging issues
+
 License
 ----
 MIT
