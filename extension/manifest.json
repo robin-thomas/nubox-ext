@@ -5,7 +5,7 @@
   "version": "1.0",
   "author": "Robin Thomas",
   "background": {
-    "scripts": ["background.js", "moment.min.js"],
+    "scripts": ["ipfs-http-client.min.js", "moment.min.js", "background.js"],
     "persistant": true
   },
   "externally_connectable": {

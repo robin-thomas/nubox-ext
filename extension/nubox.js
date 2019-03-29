@@ -97,7 +97,7 @@ const nuBox = {
     }
   },
 
-  encrypt: async (plaintext, label) => {
+  encrypt: async (plaintext, label, ipfs = false) => {
     try {
       if (plaintext === undefined || plaintext === null) {
         throw new Error('missing plaintext in encrypt request');
@@ -106,7 +106,7 @@ const nuBox = {
         throw new Error('missing label in encrypt request');
       }
 
-      return await nuBoxCallback.callExtension('encrypt', [plaintext, label]);
+      return await nuBoxCallback.callExtension('encrypt', [plaintext, label, ipfs]);
     } catch (err) {
       throw err;
     }
@@ -128,13 +128,14 @@ const nuBox = {
   },
 
   // reads the block from local fs and encrypts it with nucypher.
-  readBlock: async (file, path, offset, blockSize) => {
+  readBlock: async (file, path, offset, blockSize, ipfs = false) => {
     try {
       return await nuBoxCallback.callExtension('readBlock', {
         file: file,
         path: path,
         offset: offset,
-        blockSize: blockSize
+        blockSize: blockSize,
+        ipfs: ipfs
       });
     } catch (err) {
       throw err;

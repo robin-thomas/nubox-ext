@@ -15,7 +15,7 @@
 3. [Installation](#installation)
 
 # Who is it for?
-[NuCypher](https://www.nucypher.com/) is the go-to solution for anyone aiming to build privacy-rich applications on the blockchain. But it lacks a JavaScript library. Moreover, their codebase is written in Python, making it difficult to port over to the web side. **nuBox** chrome extension can solve these issues without you ever having to know about NuCypher at all! It even has an insanely simple API which it injects onto every website!
+[NuCypher](https://www.nucypher.com/) is the go-to solution for anyone aiming to build privacy-rich applications on the blockchain. But it lacks a JavaScript library. Moreover, their codebase is written in Python, making it difficult to port over to the web side. **nuBox** chrome extension can solve these issues without you ever having to know about NuCypher at all! It even has an insanely simple API which it injects onto every website! It even comes with support for **IPFS**!
 
 # API:
 All API calls are available under **nuBox** namespace. All of them supports *[Promises](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise)*.
@@ -29,9 +29,9 @@ await nuBox.isHostRunning();
 ###### encrypt
 This API call is used to encrypt a block of plaintext. Due to chrome limitations, it's recommended to keep under 256 KB for the plaintext size.
 ```js
-await nuBox.encrypt(plaintext, label);
+await nuBox.encrypt(plaintext, label, ipfs);
 ```
-It expects two arguments: `plaintext` and `label`.
+It expects atleast two arguments: `plaintext` and `label`. `ipfs` is optional, and if it's set as true, the encrypted data will be uploaded to Infura IPFS and the IPFS hash will be returned. The encrypted data can be accessed by visiting: <`https://ipfs.infura.io/ipfs/<hash>/`>.
 
 ###### decrypt
 This API call is used to decrypt a block of encrypted text. Due to chrome limitations, it's recommended to keep under 256 KB for the encrypted size.

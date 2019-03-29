@@ -1,5 +1,9 @@
 const port = chrome.runtime.connectNative('com.google.chrome.nubox');
 
+// to keep track of encrypted returns from nucypher
+// (for uploads to ipfs).
+let ipfsEncrypts = {};
+
 let callbacks = {};
 const registerCallback = (id, callback) => {
   callbacks[id] = callback;
@@ -10,12 +14,43 @@ port.onMessage.addListener((response) => {
 
   if (response.id !== undefined &&
       callbacks[response.id] !== undefined) {
-    callbacks[response.id]({
-      type: response.type,
-      result: response.result,
-    });
 
-    delete callbacks[response.id];
+    const msgId = response.id;
+
+    // Check whether its an encrypt request.
+    if (ipfsEncrypts[msgId] !== undefined &&
+        response.type === 'success') {
+      // delete it from the request.
+      delete ipfsEncrypts[msgId];
+
+      // Upload it to IPFS.
+      const ipfs = IpfsHttpClient('ipfs.infura.io', '5001', { protocol: 'https' });
+      const content = IpfsHttpClient.Buffer.from(response.result);
+
+      ipfs.add(content).then((results) => {
+        callbacks[response.id]({
+          type: 'success',
+          result: results[0].hash,
+        });
+
+        delete callbacks[response.id];
+      }).catch((err) => {
+        callbacks[response.id]({
+          type: 'failure',
+          result: err.message,
+        });
+
+        delete callbacks[response.id];
+      });
+
+    } else {
+      callbacks[response.id]({
+        type: response.type,
+        result: response.result,
+      });
+
+      delete callbacks[response.id];
+    }
   }
 });
 
@@ -28,7 +63,7 @@ chrome.declarativeContent.onPageChanged.removeRules(undefined, function() {
   }]);
 });
 
-const readBlock = (file, path, offset, blockSize) => {
+const readBlock = (file, path, offset, blockSize, ipfsUpload) => {
   const blob = file.slice(offset, blockSize + offset);
 
   const r = new FileReader();
@@ -39,6 +74,9 @@ const readBlock = (file, path, offset, blockSize) => {
     const label = path;
 
     // Encrypt it using host protocol.
+    if (ipfsUpload) {
+      ipfsEncrypts[msgId] = msgId;
+    }
     port.postMessage({
       id: msgId,
       cmd: 'encrypt',
@@ -161,12 +199,17 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   // encrypt it using nucypher and return it back.
   // TODO: give option to enable upload it to IPFS too.
   if (message.cmd === 'readBlock') {
-    readBlock(message.args.file, message.args.path, message.args.offset, message.args.blockSize);
+    readBlock(message.args.file, message.args.path, message.args.offset, message.args.blockSize, message.args.ipfs);
   } else if (message.cmd === 'grant') {
     grant(msgId, message.args, sender);
   } else if (message.cmd === 'revoke') {
     revoke(msgId, message.args, sender);
   } else {
+    if (message.cmd === 'encrypt' &&
+        message.args[2] === true /* ipfs */) {
+      ipfsEncrypts[msgId] = msgId;
+    }
+
     port.postMessage({
       id: msgId,
       cmd: message.cmd,
