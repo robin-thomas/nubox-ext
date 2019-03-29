@@ -69,7 +69,7 @@ const readBlock = (file, path, offset, blockSize, ipfsUpload) => {
   const r = new FileReader();
   r.onload = function(e) {
     const block = r.result;
-    const blockB64 = Buffer.from(block).toString('base64');
+    const blockB64 = IpfsHttpClient.Buffer.from(block).toString('base64');
 
     const label = path;
 
