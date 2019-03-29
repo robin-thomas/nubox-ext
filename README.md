@@ -96,10 +96,11 @@ You'll also need to install the *nuBox* chrome extension. Since it's not package
 
   ![](http://oi67.tinypic.com/286rd3a.jpg)
   ![](http://oi64.tinypic.com/k4714h.jpg)
-# Debugging issues
 
-License
-----
-MIT
+# Debugging issues
+* *nuBox* is tested only on version 3.6.0 of Python. Any different version can lead to unexpected outputs.
+* If your *Python* binary is not stored at `/usr/bin/python3.6`, make a symmlink to that location so that the host can run.
+* All run-time errors happening in the host will be stored at `host/err.log` along with the stack trace.
+
 
 **Free Software, Hell Yeah!**
