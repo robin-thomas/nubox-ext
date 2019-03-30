@@ -76,6 +76,7 @@ def parse_message(message_json):
 
         send_message(json.dumps(output))
 
+    # get Bob's public keys
     elif msg_cmd == "bob_keys":
         output = {}
         output["id"] = msg_id
@@ -92,16 +93,25 @@ def parse_message(message_json):
 
         send_message(json.dumps(output))
 
+    # encrypt operation
     elif msg_cmd == 'encrypt':
         plaintext = message['args'][0]
         label = message['args'][1]
 
+        output = {}
+        output["id"] = msg_id
+
         try:
             encrypted = Alice.encrypt(label, plaintext)
-            send_message('{"id": %s, "type": "success", "result": %s}' % (escape_message(msg_id), escape_message(encrypted)))
+            output["type"] = "success"
+            output["result"] = encrypted
         except:
-            send_message('{"id": %s, "type": "failure"}' % (escape_message(msg_id)))
+            output["type"] = "failure"
+            output["result"] = "failed to encrypt"
 
+        send_message(json.dumps(output))
+
+    # grant operation
     elif msg_cmd == 'grant':
         response = Bob.grant(label=message['args'][0],
                              bob_encrypting_key=message['args'][1],
@@ -113,13 +123,14 @@ def parse_message(message_json):
 
         if response.status_code == 200:
             output["type"] = "success"
-            output["result"] = True
+            output["result"] = "granted"
         else:
             output["type"] = "failure"
             output["result"] = response.content.decode("utf-8")
 
         send_message(json.dumps(output))
 
+    # revoke operation
     elif msg_cmd == 'revoke':
         label = message['args'][0]
 
@@ -144,15 +155,23 @@ def parse_message(message_json):
 
         send_message(json.dumps(output))
 
+    # decrypt operation
     elif msg_cmd == 'decrypt':
         encrypted = message['args'][0]
         label = message['args'][1]
 
+        output = {}
+        output["id"] = msg_id
+
         try:
             plaintext = Bob.decrypt(label, encrypted)
-            send_message('{"id": %s, "type": "success", "result": %s}' % (escape_message(msg_id), escape_message(plaintext)))
+            output["type"] = "success"
+            output["result"] = plaintext
         except:
-            send_message('{"id": %s, "type": "failure"}' % (escape_message(msg_id)))
+            output["type"] = "failure"
+            output["result"] = "failed to decrypt for this label"
+
+        send_message(json.dumps(output))
 
 
 if __name__ == '__main__':

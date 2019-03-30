@@ -79,7 +79,7 @@ const nuBox = {
         throw new Error('missing expiration in grant request');
       }
 
-      await nuBoxCallback.callExtension('grant', [label, bob_encrypting_key, bob_verifying_key, expiration]);
+      return await nuBoxCallback.callExtension('grant', [label, bob_encrypting_key, bob_verifying_key, expiration]);
     } catch (err) {
       throw err;
     }
@@ -91,7 +91,7 @@ const nuBox = {
         throw new Error('missing label in revoke request');
       }
 
-      await nuBoxCallback.callExtension('revoke', [label]);
+      return await nuBoxCallback.callExtension('revoke', [label]);
     } catch (err) {
       throw err;
     }
@@ -112,7 +112,7 @@ const nuBox = {
     }
   },
 
-  decrypt: async (encrypted, label) => {
+  decrypt: async (encrypted, label, ipfs = false) => {
     try {
       if (encrypted === undefined || encrypted === null) {
         throw new Error('missing encrypted in decrypt request');
@@ -121,7 +121,7 @@ const nuBox = {
         throw new Error('missing label in decrypt request');
       }
 
-      return await nuBoxCallback.callExtension('decrypt', [encrypted, label]);
+      return await nuBoxCallback.callExtension('decrypt', [encrypted, label, ipfs]);
     } catch (err) {
       throw err;
     }

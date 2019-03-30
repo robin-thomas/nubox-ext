@@ -37,17 +37,6 @@ class Bob(object):
         retrieval["alice_verifying_key"] = Alice.get_verifying_key()
         retrieval["message_kit"] = encrypted
 
-        retrieved = requests.post(f"{Bob.bob}/retrieve", data=json.dumps(retrieval))
-        plaintext = json.loads(retrieved.content)['result']['cleartexts'][0]
-
+        response = requests.post(f"{Bob.bob}/retrieve", data=json.dumps(retrieval))
+        plaintext = json.loads(response.content)['result']['cleartexts'][0]
         return plaintext
-
-
-# if __name__ == '__main__':
-#     label = 'hello'
-#     plaintext = 'The admiration I had for your work has completely evaporated!'
-#     encrypted = Alice.encrypt(label, plaintext)
-#     Bob.grant(label)
-#
-#     message = Bob.decrypt(label, encrypted)
-#     print(message)

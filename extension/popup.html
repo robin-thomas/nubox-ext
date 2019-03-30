@@ -2,6 +2,7 @@
   <html>
     <head>
       <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css">
+      <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.3/css/all.css">
       <style>
         .dot {height:10px;width:10px;border-radius:50%;display:inline-block}
         .online-dot {background-color:#28a745}
@@ -9,10 +10,12 @@
         .online {color:#28a745}
         .offline {color:#dc3545}
         .offline,.online {font-size:14px;float:right;text-align:right;visibility:hidden;}
+        ::-webkit-scrollbar { display: none;  // Safari and Chrome }
+        #accordion .card-header {padding:10px 0;}
       </style>
     </head>
     <body>
-      <div class="card" style="width: 18rem;">
+      <div class="card" style="width:300px;overflow:hidden;">
         <div class="card-header">
           <img class="card-img-top" src="icons/logo_128x128.png" style="width:32px;height:32px" />
           <span>nuBox</span>
@@ -20,18 +23,95 @@
           <span class="offline"><span class="dot offline-dot"></span>&nbsp;Offline</span>
         </div>
         <div class="card-body">
-          <p class="card-text">This extension compliments <a href="https://github.com/robin-thomas/nubox" target="_blank">nuBox</a> to get
-            NuCypher working on the browser side! Yay!
-          </p>
-          <div class="form-group">
-            <label for="popup-bek"><b>Bob's Encrypting key:</b></label>
-            <input type="text" class="form-control" id="popup-bek" placeholder="" readonly>
+          <p class="card-text">This extension can get NuCypher working on the browser side! Yay!</p>
+
+          <div id="accordion">
+            <div class="card">
+              <div class="card-header" id="headingOne">
+                <button class="btn btn-link" data-toggle="collapse" data-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+                  Get Bob's Keys
+                </button>
+              </div>
+              <div id="collapseOne" class="collapse" aria-labelledby="headingOne" data-parent="#accordion">
+                <div class="card-body">
+                  <div class="form-group">
+                    <label for="popup-bek"><b>Bob's Encrypting key:</b></label>
+                    <input type="text" class="form-control" id="popup-bek" placeholder="" readonly>
+                  </div>
+                  <div class="form-group">
+                    <label for="popup-bek"><b>Bob's Verifying key:</b></label>
+                    <input type="text" class="form-control" id="popup-bvk" placeholder="" readonly>
+                  </div>
+                  <button type="button" class="btn btn-primary" id="get-keys">Get Bob's keys</button>
+                </div>
+              </div>
+            </div>
+            <div class="card">
+              <div class="card-header" id="headingTwo">
+                <button class="btn btn-link" data-toggle="collapse" data-target="#collapseTwo" aria-expanded="true" aria-controls="collapseTwo">
+                  Encrypt
+                </button>
+              </div>
+              <div id="collapseTwo" class="collapse" aria-labelledby="headingTwo" data-parent="#accordion">
+                <div class="card-body">
+                  <div class="form-group">
+                    <label for="popup-plaintext-encrypt"><b>Plaintext:</b></label>
+                    <input type="text" class="form-control" id="popup-plaintext-encrypt" placeholder="" >
+                  </div>
+                  <div class="form-group">
+                    <label for="popup-label-encrypt"><b>Label:</b></label>
+                    <input type="text" class="form-control" id="popup-label-encrypt" placeholder="" >
+                  </div>
+                  <div class="form-group">
+                    <label for="popup-encrypted-encrypt"><b>Encrypted:</b></label>
+                    <input type="text" class="form-control" id="popup-encrypted-encrypt" placeholder="" readonly>
+                  </div>
+                  <button type="button" class="btn btn-primary" id="encrypt-btn">Encrypt</button>
+                </div>
+              </div>
+            </div>
+            <div class="card">
+              <div class="card-header" id="headingThree">
+                <button class="btn btn-link" data-toggle="collapse" data-target="#collapseThree" aria-expanded="true" aria-controls="collapseThree">
+                  Decrypt
+                </button>
+              </div>
+              <div id="collapseThree" class="collapse" aria-labelledby="headingThree" data-parent="#accordion">
+                <div class="card-body">
+                  <div class="form-group">
+                    <label for="popup-encrypted-decrypt"><b>Encrypted:</b></label>
+                    <input type="text" class="form-control" id="popup-encrypted-decrypt" placeholder="" >
+                  </div>
+                  <div class="form-group">
+                    <label for="popup-label-decrypt"><b>Label:</b></label>
+                    <input type="text" class="form-control" id="popup-label-decrypt" placeholder="" >
+                  </div>
+                  <div class="form-group">
+                    <label for="popup-plaintext-decrypt"><b>Plaintext:</b></label>
+                    <input type="text" class="form-control" id="popup-plaintext-decrypt" placeholder="" readonly>
+                  </div>
+                  <button type="button" class="btn btn-primary" id="decrypt-btn">Decrypt</button>
+                </div>
+              </div>
+            </div>
+            <div class="card">
+              <div class="card-header" id="headingFour">
+                <button class="btn btn-link" data-toggle="collapse" data-target="#collapseFour" aria-expanded="true" aria-controls="collapseFour">
+                  Grant
+                </button>
+              </div>
+              <div id="collapseFour" class="collapse" aria-labelledby="headingFour" data-parent="#accordion">
+                <div class="card-body">
+                  <div class="form-group">
+                    <label for="popup-label-grant"><b>Label:</b></label>
+                    <input type="text" class="form-control" id="popup-label-grant" placeholder="" >
+                  </div>
+                  <button type="button" class="btn btn-primary" id="grant-btn">Grant</button>
+                </div>
+              </div>
+            </div>
           </div>
-          <div class="form-group">
-            <label for="popup-bek"><b>Bob's Verifying key:</b></label>
-            <input type="text" class="form-control" id="popup-bvk" placeholder="" readonly>
-          </div>
-          <button type="button" class="btn btn-primary" id="get-keys">Get Bob's keys</button>
+
         </div>
         <ul class="list-group list-group-flush">
           <li class="list-group-item">&copy; Robin Thomas | <a href="https://github.com/robin-thomas/nubox-ext" target="_blank">Github</a></li>
@@ -39,5 +119,6 @@
       </div>
     </body>
     <script type="text/javascript" src="jquery-3.3.1.slim.min.js"></script>
+    <script type="text/javascript" src="bootstrap.min.js"></script>
     <script type="text/javascript" src="popup.js"></script>
   </html>

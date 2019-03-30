@@ -114,7 +114,7 @@ const grant = (msgId, args, sender) => {
   // open up the grant popup which asks for user permission.
   const popup = window.open('grant.html', 'extension_popup',
     `width=340,
-     height=675,
+     height=705,
      top=25,
      left=25,
      toolbar=no,
@@ -201,12 +201,11 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   console.log(message);
 
   const msgId = message.msgId;
-
   registerCallback(msgId, sendResponse);
 
   // Read a block of data from a local file,
   // encrypt it using nucypher and return it back.
-  // TODO: give option to enable upload it to IPFS too.
+  // option to upload it to IPFS too.
   if (message.cmd === 'readBlock') {
     readBlock(msgId, message.args.blob, message.args.path, message.args.ipfs);
   } else if (message.cmd === 'grant') {
@@ -214,12 +213,33 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   } else if (message.cmd === 'revoke') {
     revoke(msgId, message.args, sender);
   } else {
-    if (message.cmd === 'encrypt' &&
-        message.args[2] === true /* ipfs */) {
-      ipfsEncrypts[msgId] = msgId;
-    } else if (message.cmd === 'decrypt') {
-      console.log(message);
+    if (message.cmd === 'encrypt') {
+      if (message.args[2] === true /* ipfs */) {
+        ipfsEncrypts[msgId] = msgId;
+      }
+      message.args[0] = IpfsHttpClient.Buffer.from(message.args[0]).toString('base64');
       message.args[1] = IpfsHttpClient.Buffer.from(message.args[1]).toString('hex');
+
+    } else if (message.cmd === 'decrypt') {
+      message.args[1] = IpfsHttpClient.Buffer.from(message.args[1]).toString('hex');
+
+      if (message.args[2] === true) {
+        const ipfs = IpfsHttpClient('ipfs.infura.io', '5001', { protocol: 'https' });
+        ipfs.get(message.args[0]).then((results) => {
+          // TODO: how to handle error.
+
+          const encrypted = results[0].content.toString();
+
+          console.log(encrypted);
+
+          port.postMessage({
+            id: msgId,
+            cmd: message.cmd,
+            args: [encrypted, message.args[1]],
+          });
+        });
+        return;
+      }
     }
 
     port.postMessage({
