@@ -9,13 +9,15 @@
         .offline-dot {background-color:#dc3545}
         .online {color:#28a745}
         .offline {color:#dc3545}
-        .offline,.online {font-size:14px;float:right;text-align:right;visibility:hidden;}
-        ::-webkit-scrollbar { display: none;  // Safari and Chrome }
-        #accordion .card-header {padding:10px 0;}
+        .offline,.online {font-size:14px;float:right;text-align:right;visibility:hidden}
+        ::-webkit-scrollbar {display:none}
+        #accordion {height:375px;overflow-y:scroll}
+        #accordion .card-header {padding:10px 0;background:#6c757d;border-radius:6px 6px 0 0}
+        #accordion .btn-link {color:#fff}
       </style>
     </head>
     <body>
-      <div class="card" style="width:300px;overflow:hidden;">
+      <div class="card" style="width:300px;height:500px;border:none">
         <div class="card-header">
           <img class="card-img-top" src="icons/logo_128x128.png" style="width:32px;height:32px" />
           <span>nuBox</span>
@@ -113,6 +115,7 @@
           </div>
 
         </div>
+
         <ul class="list-group list-group-flush">
           <li class="list-group-item">&copy; Robin Thomas | <a href="https://github.com/robin-thomas/nubox-ext" target="_blank">Github</a></li>
         </ul>
