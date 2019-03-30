@@ -92,12 +92,18 @@ You'll also need to install the *nuBox* chrome extension. Since it's not package
 * You'll be able to see that *nuBox* chrome extension has been successfully loaded!
 
 # Popup UI
-*nuBox* also comes with a popup UI that the user can use to interact with it.
-- It will show the "online" status (online meaning it was able to connect to the NuCypher network).
-- Retrieve Bob's encrypting and verifying keys (it'll be enabled only if online).
+*nuBox* also comes with a popup UI that the user can use to interact with NuCypher without any of the complexity.
+It has the following features:
+* It will show the "online" status (online meaning it was able to connect to the NuCypher network). All the below operations are only enabled if "online".
+* Retrieve `Bob's encrypting and verifying keys`
+* `Encrypt` a block of text.
+* `Decrypt` a block of text
+* `Grant` access for the label, so that `decrypt` operation can pass.
 
-  ![](http://oi67.tinypic.com/286rd3a.jpg)
-  ![](http://oi64.tinypic.com/k4714h.jpg)
+  ![](http://oi63.tinypic.com/2112tjb.jpg)
+  ![](http://oi63.tinypic.com/2enu5b8.jpg)
+  ![](http://oi63.tinypic.com/t8rt38.jpg)
+  ![](http://oi68.tinypic.com/29o69gm.jpg)
 
 # Debugging issues
 * *nuBox* is tested only on version 3.6.0 of Python. Any different version might lead to unexpected outputs.
