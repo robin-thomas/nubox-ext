@@ -63,28 +63,34 @@ chrome.declarativeContent.onPageChanged.removeRules(undefined, function() {
   }]);
 });
 
-const readBlock = (file, path, offset, blockSize, ipfsUpload) => {
-  const blob = file.slice(offset, blockSize + offset);
+const readBlock = (msgId, blob, path, ipfsUpload) => {
+  const xhr = new XMLHttpRequest();
+  xhr.open('GET', blob, true);
+  xhr.responseType = 'blob';
+  xhr.onload = function(e) {
+    if (this.status == 200) {
+      const blobContent = this.response;
 
-  const r = new FileReader();
-  r.onload = function(e) {
-    const block = r.result;
-    const blockB64 = IpfsHttpClient.Buffer.from(block).toString('base64');
+      const r = new FileReader();
+      r.onload = function(e) {
+        const label = IpfsHttpClient.Buffer.from(path).toString('hex');
+        const blockB64 = IpfsHttpClient.Buffer.from(r.result).toString('base64');
 
-    const label = path;
+        // Encrypt it using host protocol.
+        if (ipfsUpload) {
+          ipfsEncrypts[msgId] = msgId;
+        }
+        port.postMessage({
+          id: msgId,
+          cmd: 'encrypt',
+          args: [blockB64, label],
+        });
+      };
 
-    // Encrypt it using host protocol.
-    if (ipfsUpload) {
-      ipfsEncrypts[msgId] = msgId;
+      r.readAsArrayBuffer(blobContent);
     }
-    port.postMessage({
-      id: msgId,
-      cmd: 'encrypt',
-      args: [blockB64, label],
-    });
   };
-
-  r.readAsArrayBuffer(blob);
+  xhr.send();
 };
 
 const grant = (msgId, args, sender) => {
@@ -103,7 +109,7 @@ const grant = (msgId, args, sender) => {
     });
     return;
   }
-  args[3] = moment(args[3]).format('YYYY-MM-DDTHH:mm:ss') + '.000000Z';
+  args[3] = moment(args[3]).format('YYYY-MM-DDTHH:mm:ss') + '.445418Z';
 
   // open up the grant popup which asks for user permission.
   const popup = window.open('grant.html', 'extension_popup',
@@ -137,11 +143,14 @@ const grant = (msgId, args, sender) => {
     });
     popup.$('#nubox-grant-confirm').on('click', (e) => {
       // If the user approves, send it to the native host for approval.
+      args[0] = IpfsHttpClient.Buffer.from(args[0]).toString('hex');
+
       port.postMessage({
         id: msgId,
         cmd: 'grant',
         args: args,
       });
+
       popup.close();
     });
   }, false);
@@ -191,7 +200,7 @@ const revoke = (msgId, args, sender) => {
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   console.log(message);
 
-  const msgId = Math.random().toString(36).substring(7);
+  const msgId = message.msgId;
 
   registerCallback(msgId, sendResponse);
 
@@ -199,7 +208,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   // encrypt it using nucypher and return it back.
   // TODO: give option to enable upload it to IPFS too.
   if (message.cmd === 'readBlock') {
-    readBlock(message.args.file, message.args.path, message.args.offset, message.args.blockSize, message.args.ipfs);
+    readBlock(msgId, message.args.blob, message.args.path, message.args.ipfs);
   } else if (message.cmd === 'grant') {
     grant(msgId, message.args, sender);
   } else if (message.cmd === 'revoke') {
@@ -208,6 +217,9 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     if (message.cmd === 'encrypt' &&
         message.args[2] === true /* ipfs */) {
       ipfsEncrypts[msgId] = msgId;
+    } else if (message.cmd === 'decrypt') {
+      console.log(message);
+      message.args[1] = IpfsHttpClient.Buffer.from(message.args[1]).toString('hex');
     }
 
     port.postMessage({

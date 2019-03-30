@@ -24,7 +24,7 @@ class Bob(object):
         grant["m"] = 1
         grant["n"] = 1
         grant["label"] = label
-        grant["expiration"] = expiration #"2020-02-10T22:17:01.445418Z"
+        grant["expiration"] = expiration
 
         response = requests.put(f"{Alice.alice}/grant", data=json.dumps(grant))
         return response

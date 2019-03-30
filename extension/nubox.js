@@ -128,13 +128,11 @@ const nuBox = {
   },
 
   // reads the block from local fs and encrypts it with nucypher.
-  readBlock: async (file, path, offset, blockSize, ipfs = false) => {
+  readBlock: async (blob, path, ipfs = false) => {
     try {
       return await nuBoxCallback.callExtension('readBlock', {
-        file: file,
+        blob: blob,
         path: path,
-        offset: offset,
-        blockSize: blockSize,
         ipfs: ipfs
       });
     } catch (err) {
