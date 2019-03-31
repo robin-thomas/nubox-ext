@@ -5,7 +5,7 @@
 
 # Table of Contents
 1. [Who is it for?](#who-is-it-for)
-2. [API](#api)
+2. [API (for developers)](#api)
     - [isHostRunning](#ishostrunning)
     - [encrypt](#encrypt)
     - [decrypt](#decrypt)
@@ -13,7 +13,7 @@
     - [revoke](#revoke)
     - [getBobKeys](#getbobkeys)
 3. [Installation](#installation)
-4. [Popup UI](#popup-ui)
+4. [Popup UI (for users)](#popup-ui)
 5. [Debugging issues](#debugging-issues)
 
 # Who is it for?
@@ -33,14 +33,14 @@ This API call is used to encrypt a block of plaintext. Due to [chrome](https://d
 ```js
 await nuBox.encrypt(plaintext, label, ipfs);
 ```
-It expects atleast two arguments: `plaintext` and `label`. `ipfs` is optional, and if it's set as true, the encrypted data will be uploaded to Infura IPFS and the IPFS hash will be returned. The encrypted data can be accessed by visiting: `https://ipfs.infura.io/ipfs/<hash>/`.
+It expects atleast two arguments: `plaintext` and `label`. `ipfs` is optional (with default value `false`), and if it's set as true, the encrypted data will be uploaded to Infura IPFS and the IPFS hash will be returned. The encrypted data can be accessed by visiting: `https://ipfs.infura.io/ipfs/<hash>/`.
 
 ###### decrypt
 This API call is used to decrypt a block of encrypted text. Due to [chrome](https://developer.chrome.com/extensions/nativeMessaging#native-messaging-host-protocol) limitations, it's recommended to keep under 256 KB for the encrypted size.
 ```js
-await nuBox.decrypt(encrypted, label);
+await nuBox.decrypt(encrypted, label, ipfs);
 ```
-It expects two arguments: `encrypted` and `label`.
+It expects atleast two arguments: `encrypted` and `label`. `ipfs` is optional (with default value `false`), and if it's set as true, the `encrypted` argument should be the Infura IPFS hash from which the encrypted data will be downloaded.
 
 ###### grant
 This API call is used to invoke a grant request waiting for user's permission to approve or reject the request.
@@ -50,7 +50,7 @@ await nuBox.grant(label, bek, bvk, expiration);
 It expects four arguments: `label`, `bek`, `bvk` and `expiration`.
 * `bek` is *Bob's encrypting key* (which is a hex-encoded string). It can be retrieved using `getBobKeys` API.
 * `bvk` is *Bob's verifying key* (which is a hex-encoded string). It can be retrieved using `getBobKeys` API.
-* `expiration` is a ISO-8601 formatted datetime string (for example, **'2019-03-29 22:23:10'**).
+* `expiration` is a ISO-8601 formatted datetime string (in the format of `YYYY-MM-DD HH:mm:ss`. For example, **'2019-03-29 22:23:10'**).
 
 ![](http://oi64.tinypic.com/akae87.jpg)
 
@@ -68,19 +68,28 @@ It expects one argument: `label`.
 It'll open up a **revoke** popup for the user to approve. It'll have the sender information and also details about the revoke request. If the user approves this request, it'll be send to the NuCypher network for processing.
 
 ###### getBobKeys
-This API call is used to get Bob's encrypting key and verifying key (both are public keys) that will be used for granting access for Bob.
+This API call is used to get Bob's encrypting key and verifying key (both are public keys) that can be used for granting access for Bob to a policy.
 ```js
 await nuBox.getBobKeys();
 ```
 
 # Installation:
-**nuBox** packages all NuCypher dependencies into docker containers. All the user needs to have is *docker*, *docker-compose* and *chrome browser*.
+**nuBox** packages all NuCypher dependencies into docker containers. All the user needs to have is *docker*, *docker-compose* and *chrome browser* (or *Brave browser*).
 
 Run the below step to install the *nuBox* chrome **host**.
 ```sh
 $ cd nubox-ext
+$ sudo docker-compose build
 $ sudo docker-compose up -d
 $ ./host/install_chrome.sh
+```
+
+If you want to use it with Brave browser, run the below commands.
+```sh
+$ cd nubox-ext
+$ sudo docker-compose build
+$ sudo docker-compose up -d
+$ ./host/install_brave.sh
 ```
 
 *nuBox* host is written in Python 3.6. It also assumes that the python binary is at the location `/usr/bin/python3.6`
@@ -101,6 +110,7 @@ It has the following features:
 * `Encrypt` a block of text.
 * `Decrypt` a block of text
 * `Grant` access for the label, so that `decrypt` operation can pass.
+* Any errors in the above API calls will alert the error message onto the active tab of the browser.
 
   ![](http://oi63.tinypic.com/2112tjb.jpg)
   ![](http://oi63.tinypic.com/2enu5b8.jpg)
@@ -111,6 +121,7 @@ It has the following features:
 * *nuBox* is tested only on version 3.6.0 of Python. Any different version might lead to unexpected outputs.
 * If your *Python* binary is not stored at `/usr/bin/python3.6`, make a symmlink to that location so that the host can run.
 * All run-time errors happening in the host will be stored at `host/err.log` along with the stack trace.
+* If the host crashed because of any of the above reasons, just restart the extension (after fixing the issue).
 
 
 **Free Software, Hell Yeah!**
