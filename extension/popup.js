@@ -1,19 +1,22 @@
-const getKeysButton = document.getElementById('get-keys');
-const encryptButton = document.getElementById('encrypt-btn');
-const decryptButton = document.getElementById('decrypt-btn');
-const grantButton = document.getElementById('grant-btn');
+const getKeysButton = $('#get-keys');
+const encryptButton = $('#encrypt-btn');
+const decryptButton = $('#decrypt-btn');
+const grantButton = $('#grant-btn');
 
 window.onload = (e) => {
   $('.offline').css('visibility', 'hidden');
   $('.online').css('visibility', 'hidden');
-  $('#get-keys').prop('disabled', true);
+  getKeysButton.prop('disabled', true);
+  encryptButton.prop('disabled', true);
+  decryptButton.prop('disabled', true);
+  grantButton.prop('disabled', true);
 
   const msgId = Math.random().toString(36).substring(7);
 
   // Check whether the nucypher docker containers are running.
   chrome.runtime.sendMessage({
     msgId: msgId,
-    cmd: "isHostRunning",
+    cmd: 'isHostRunning',
     args: [],
   }, (response) => {
     console.log(response);
@@ -24,7 +27,10 @@ window.onload = (e) => {
       $('.offline').css('visibility', 'visible');
     } else {
       $('.online').css('visibility', 'visible');
-      $('#get-keys').prop('disabled', false);
+      getKeysButton.prop('disabled', false);
+      encryptButton.prop('disabled', false);
+      decryptButton.prop('disabled', false);
+      grantButton.prop('disabled', false);
     }
   });
 }
@@ -51,7 +57,7 @@ const callExtension = (cmd, args) => {
   });
 };
 
-getKeysButton.onclick = async () => {
+getKeysButton.on('click', async () => {
   try {
     $('#popup-bek').val('');
     $('#popup-bvk').val('');
@@ -64,9 +70,9 @@ getKeysButton.onclick = async () => {
   } catch (err) {
     throwError(err);
   }
-};
+});
 
-encryptButton.onclick = async () => {
+encryptButton.on('click', async () => {
   try {
     $('#popup-encrypted-encrypt').val('');
 
@@ -79,15 +85,15 @@ encryptButton.onclick = async () => {
   } catch (err) {
     throwError(err);
   }
-};
+});
 
-decryptButton.onclick = async () => {
+decryptButton.on('click', async () => {
   try {
     $('#popup-plaintext-decrypt').val('');
 
     const loadingText = '<i class="fas fa-spinner fa-spin"></i>';
-    $(decryptButton).data('original-text', $(decryptButton).html());
-    $(decryptButton).html(loadingText).attr('disabled', 'disabled');
+    decryptButton.data('original-text', decryptButton.html());
+    decryptButton.html(loadingText).attr('disabled', 'disabled');
 
     const encrypted = $('#popup-encrypted-decrypt').val();
     const label = $('#popup-label-decrypt').val();
@@ -95,14 +101,14 @@ decryptButton.onclick = async () => {
     const plaintext = await callExtension('decrypt', [encrypted, label]);
 
     $('#popup-plaintext-decrypt').val(atob(plaintext));
-    $(decryptButton).html($(decryptButton).data('original-text')).attr('disabled', false);
+    decryptButton.html(decryptButton.data('original-text')).attr('disabled', false);
 
   } catch (err) {
     throwError(err);
   }
-};
+});
 
-grantButton.onclick = async (ele) => {
+grantButton.on('click', async () => {
   try {
     const label = $('#popup-label-grant').val();
 
@@ -113,7 +119,7 @@ grantButton.onclick = async (ele) => {
   } catch (err) {
     throwError(err);
   }
-};
+});
 
 const throwError = (error) => {
   chrome.tabs.query({
