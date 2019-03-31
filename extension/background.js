@@ -105,7 +105,7 @@ const grant = (msgId, args, sender) => {
   if (moment().isAfter(args[3])) {
     callbacks[msgId]({
       type: 'failure',
-      result: 'Expiration date string is in the past',
+      result: 'Expiration date string is in the past or today',
     });
     return;
   }
@@ -125,6 +125,13 @@ const grant = (msgId, args, sender) => {
      status=no,
      menubar=no,
      directories=no`);
+
+  popup.addEventListener('beforeunload', () => {
+    callbacks[msgId]({
+      type: 'failure',
+      result: 'User has rejected the grant request',
+    });
+  });
 
   popup.addEventListener('load', (e) => {
     popup.$('#nubox-grant-bek').val(args[1]);
@@ -171,6 +178,13 @@ const revoke = (msgId, args, sender) => {
      status=no,
      menubar=no,
      directories=no`);
+
+  popup.addEventListener('beforeunload', () => {
+    callbacks[msgId]({
+      type: 'failure',
+      result: 'User has rejected the revoke request',
+    });
+  });
 
   popup.addEventListener('load', (e) => {
     popup.$('#card-nubox-url').html(sender.url);
