@@ -126,12 +126,13 @@ const grant = (msgId, args, sender) => {
      menubar=no,
      directories=no`);
 
-  popup.addEventListener('beforeunload', () => {
+  const popupGrantCloseHandler = (e) => {
     callbacks[msgId]({
       type: 'failure',
       result: 'User has rejected the grant request',
     });
-  });
+  };
+  popup.addEventListener('beforeunload', popupGrantCloseHandler);
 
   popup.addEventListener('load', (e) => {
     popup.$('#nubox-grant-bek').val(args[1]);
@@ -148,7 +149,10 @@ const grant = (msgId, args, sender) => {
       });
       popup.close();
     });
-    popup.$('#nubox-grant-confirm').on('click', (e) => {
+    popup.$('#nubox-grant-confirm').on('click', () => {
+      // Cancel the popup event handler.
+      popup.removeEventListener('beforeunload', popupGrantCloseHandler, false);
+
       // If the user approves, send it to the native host for approval.
       args[0] = IpfsHttpClient.Buffer.from(args[0]).toString('hex');
 
@@ -179,12 +183,13 @@ const revoke = (msgId, args, sender) => {
      menubar=no,
      directories=no`);
 
-  popup.addEventListener('beforeunload', () => {
+  const popupRevokeCloseHandler = (e) => {
     callbacks[msgId]({
       type: 'failure',
       result: 'User has rejected the revoke request',
     });
-  });
+  };
+  popup.addEventListener('beforeunload', popupRevokeCloseHandler);
 
   popup.addEventListener('load', (e) => {
     popup.$('#card-nubox-url').html(sender.url);
@@ -199,6 +204,9 @@ const revoke = (msgId, args, sender) => {
       popup.close();
     });
     popup.$('#nubox-grant-confirm').on('click', (e) => {
+      // Cancel the popup event handler.
+      popup.removeEventListener('beforeunload', popupRevokeCloseHandler, false);
+
       // If the user approves, send it to the native host for approval.
       port.postMessage({
         id: msgId,
