@@ -10,7 +10,7 @@ s.onload = function() {
 document.addEventListener('nuBox.api.request', (data) => {
   const msg = data.detail;
 
-  chrome.runtime.sendMessage(msg, response => {
+  chrome.runtime.sendMessage(msg, (response) => {
     sendResponse(msg.msgId, response);
   });
 }, false);

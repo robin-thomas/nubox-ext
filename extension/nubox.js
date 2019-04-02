@@ -39,6 +39,7 @@ const nuBoxCallback = {
         },
         bubbles: true,
       });
+
       document.dispatchEvent(event);
     });
   },

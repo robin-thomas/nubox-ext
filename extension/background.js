@@ -260,7 +260,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
             args: [encrypted, message.args[1]],
           });
         });
-        return;
+        return true;
       }
     }
 
