@@ -17,6 +17,17 @@ port.onMessage.addListener((response) => {
 
     const msgId = response.id;
 
+    if (callbacks[response.id].resolve !== undefined) {
+      if (response.type === 'success') {
+        callbacks[response.id].resolve(response.result);
+      } else {
+        callbacks[response.id].reject(response.result);
+      }
+
+      delete callbacks[response.id];
+      return;
+    }
+
     // Check whether its an encrypt request.
     if (ipfsEncrypts[msgId] !== undefined &&
         response.type === 'success') {
@@ -273,3 +284,83 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
   return true;
 });
+
+
+const Worker = {
+  getNextBlock: (hash, path) => {
+    return new Promise((resolve, reject) => {
+      const msgId = Math.random().toString(36).substring(7);
+
+      registerCallback(msgId, {
+        resolve: resolve,
+        reject: reject,
+      });
+
+      const ipfs = IpfsHttpClient('ipfs.infura.io', '5001', { protocol: 'https' });
+      ipfs.get(hash).then((results) => {
+        const encrypted = results[0].content.toString();
+
+        path = IpfsHttpClient.Buffer.from(path).toString('hex');
+
+        port.postMessage({
+          id: msgId,
+          cmd: 'decrypt',
+          args: [encrypted, path],
+        });
+      });
+    });
+  },
+
+  downloadFile: async (ipfsList, fileName, path) => {
+    let writer = null;
+
+    try {
+      // Create the writeable stream.
+      const fileStream = streamSaver.createWriteStream(fileName);
+      writer = fileStream.getWriter();
+
+      // Read all the blocks from ipfs and join them.
+      for (const hash of ipfsList) {
+        const decryptedB64 = await Worker.getNextBlock(hash, path);
+        const decrypted = IpfsHttpClient.Buffer.from(decryptedB64, 'base64');
+        writer.write(decrypted);
+      }
+
+      // Close the stream.
+      writer.close();
+
+    } catch (err) {
+      if (writer !== null) {
+        writer.abort();
+      }
+      console.log(err);
+    }
+  },
+};
+
+const responseListener = (details) => {
+  const headers = details.responseHeaders;
+
+  // get the ipfs hashes from the headers.
+  let data = null;
+  let nubox = false;
+  for (let i = 0; i < headers.length; i++) {
+    if (headers[i].name === 'nubox-file') {
+      data = JSON.parse(headers[i].value);
+      if (data.ipfs.length > 0) {
+        nubox = true;
+      }
+      break;
+    }
+  }
+
+  // Trigger download.
+  if (nubox) {
+    console.log(data);
+    Worker.downloadFile(data.ipfs, data.filename, data.path);
+  }
+};
+
+chrome.webRequest.onCompleted.addListener(responseListener, {
+  urls: ["http://localhost:4000/download/*"] /* filter */
+}, ['responseHeaders']);

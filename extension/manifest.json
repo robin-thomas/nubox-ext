@@ -5,7 +5,7 @@
   "version": "1.0",
   "author": "Robin Thomas",
   "background": {
-    "scripts": ["ipfs-http-client.min.js", "moment.min.js", "background.js"],
+    "scripts": ["ipfs-http-client.min.js", "moment.min.js", "background.js", "StreamSaver.js"],
     "persistant": true
   },
   "externally_connectable": {
@@ -19,7 +19,9 @@
     "tabs",
     "nativeMessaging",
     "*://*/*",
-    "activeTab"
+    "activeTab",
+    "webRequest",
+    "webRequestBlocking"
   ],
   "icons": {
     "128": "icons/logo_128x128.png"
