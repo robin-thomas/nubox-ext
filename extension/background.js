@@ -219,6 +219,7 @@ const revoke = (msgId, args, sender) => {
       popup.removeEventListener('beforeunload', popupRevokeCloseHandler, false);
 
       // If the user approves, send it to the native host for approval.
+      args[0] = IpfsHttpClient.Buffer.from(args[0]).toString('hex');
       port.postMessage({
         id: msgId,
         cmd: 'revoke',
