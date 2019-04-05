@@ -133,23 +133,20 @@ def parse_message(message_json):
     # revoke operation
     elif msg_cmd == 'revoke':
         label = message['args'][0]
+        bvk = message['args'][1]
 
         output = {}
         output["id"] = msg_id
 
-        try:
-            policy_encrypting_key = Alice.get_policy_encrypting_key(label)
-        except:
-            output["type"] = "failure"
-            output["result"] = "failed to retrieve policy_encrypting_key for this label"
-
         if ("result" in output) == False:
-            try:
-                Alice.revoke(policy_encrypting_key)
-
+            response = Alice.revoke(label, bvk)
+            logging.error(label)
+            logging.error(bvk)
+            logging.error(response.content)
+            if response.status_code == 200:
                 output["type"] = "success"
                 output["result"] = True
-            except:
+            else:
                 output["type"] = "failure"
                 output["result"] = "failed to revoke for this label"
 

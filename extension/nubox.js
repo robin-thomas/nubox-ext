@@ -86,13 +86,16 @@ const nuBox = {
     }
   },
 
-  revoke: async (label) => {
+  revoke: async (label, bvk) => {
     try {
       if (label === undefined || label === null) {
         throw new Error('missing label in revoke request');
       }
+      if (bvk === undefined || bvk === null) {
+        throw new Error('missing bob verifying key in revoke request');
+      }
 
-      return await nuBoxCallback.callExtension('revoke', [label]);
+      return await nuBoxCallback.callExtension('revoke', [label, bvk]);
     } catch (err) {
       throw err;
     }

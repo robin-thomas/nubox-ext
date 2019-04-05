@@ -21,12 +21,13 @@ class Alice(object):
         return json_response['result']['policy_encrypting_key']
 
     @staticmethod
-    def revoke(policy_encrypting_key):
+    def revoke(label, bvk):
         request = {}
-        request["policy_encrypting_key"] = policy_encrypting_key
+        request["label"] = label
+        request["bob_verifying_key"] = bvk
 
-        response = requests.post(f"{Alice.alice}/revoke", data=json.dumps(request))
-        return response.status_code == 200
+        response = requests.delete(f"{Alice.alice}/revoke", data=json.dumps(request))
+        return response #.status_code == 200
 
     @staticmethod
     def encrypt(label, message):
