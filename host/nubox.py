@@ -113,13 +113,13 @@ def parse_message(message_json):
 
     # grant operation
     elif msg_cmd == 'grant':
+        output = {}
+        output["id"] = msg_id
+
         response = Bob.grant(label=message['args'][0],
                              bob_encrypting_key=message['args'][1],
                              bob_verifying_key=message['args'][2],
                              expiration=message['args'][3])
-
-        output = {}
-        output["id"] = msg_id
 
         if response.status_code == 200:
             output["type"] = "success"
@@ -140,15 +140,13 @@ def parse_message(message_json):
 
         if ("result" in output) == False:
             response = Alice.revoke(label, bvk)
-            logging.error(label)
-            logging.error(bvk)
-            logging.error(response.content)
+
             if response.status_code == 200:
                 output["type"] = "success"
                 output["result"] = True
             else:
                 output["type"] = "failure"
-                output["result"] = "failed to revoke for this label"
+                output["result"] = response.content.decode("utf-8")
 
         send_message(json.dumps(output))
 
