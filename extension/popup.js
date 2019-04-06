@@ -2,6 +2,7 @@ const getKeysButton = $('#get-keys');
 const encryptButton = $('#encrypt-btn');
 const decryptButton = $('#decrypt-btn');
 const grantButton = $('#grant-btn');
+const revokeButton = $('#revoke-btn');
 
 window.onload = (e) => {
   $('.offline').css('visibility', 'hidden');
@@ -115,6 +116,19 @@ grantButton.on('click', async () => {
     // Ask for grant.
     const output = await callExtension('bob_keys', []);
     await callExtension('grant', [label, output.bek, output.bvk, '2020-01-01 00:00:00']);
+
+  } catch (err) {
+    throwError(err);
+  }
+});
+
+revokeButton.on('click', async () => {
+  try {
+    const label = $('#popup-label-revoke').val();
+    const bvk = $('#popup-bvk-revoke').val();
+
+    // Ask for revoke.
+    await callExtension('revoke', [label, bvk]);
 
   } catch (err) {
     throwError(err);
