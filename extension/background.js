@@ -125,7 +125,7 @@ const grant = (msgId, args, sender) => {
   // open up the grant popup which asks for user permission.
   const popup = window.open('grant.html', 'extension_popup',
     `width=340,
-     height=705,
+     height=725,
      top=25,
      left=25,
      toolbar=no,
@@ -182,7 +182,7 @@ const revoke = (msgId, args, sender) => {
   // open up the grant popup which asks for user permission.
   const popup = window.open('revoke.html', 'extension_popup',
     `width=315,
-     height=455,
+     height=515,
      top=25,
      left=25,
      toolbar=no,
