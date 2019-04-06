@@ -105,9 +105,9 @@ def parse_message(message_json):
             encrypted = Alice.encrypt(label, plaintext)
             output["type"] = "success"
             output["result"] = encrypted
-        except:
+        except Exception as e:
             output["type"] = "failure"
-            output["result"] = "failed to encrypt"
+            output["result"] = str(e)
 
         send_message(json.dumps(output))
 

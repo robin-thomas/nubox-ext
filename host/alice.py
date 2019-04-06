@@ -2,9 +2,6 @@ import requests
 import json
 from base64 import b64decode, b64encode
 
-from pyUmbral.umbral.keys import UmbralPublicKey
-from nucypher.characters.lawful import Enrico
-
 class Alice(object):
     alice = "http://localhost:8151"
 
@@ -31,15 +28,13 @@ class Alice(object):
 
     @staticmethod
     def encrypt(label, message):
-        plaintext = bytes(message, encoding='utf-8')
+        request = {}
+        request["label"] = label
+        request["message"] = message
 
-        policy_encrypting_key = Alice.get_policy_encrypting_key(label)
-        encrypting_key = UmbralPublicKey.from_bytes(bytes.fromhex(policy_encrypting_key))
-
-        ENRICO = Enrico(policy_encrypting_key=encrypting_key)
-        ciphertext, signature = ENRICO.encrypt_message(plaintext)
-
-        return b64encode(ciphertext.to_bytes()).decode()
+        response = requests.put(f"{Alice.alice}/encrypt", data=json.dumps(request))
+        encrypted = json.loads(response.content)['result']['message_kit']
+        return encrypted
 
 
 # if __name__ == '__main__':
