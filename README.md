@@ -52,18 +52,18 @@ It expects four arguments: `label`, `bek`, `bvk` and `expiration`.
 * `bvk` is *Bob's verifying key* (which is a hex-encoded string). It can be retrieved using `getBobKeys` API.
 * `expiration` is a ISO-8601 formatted datetime string (in the format of `YYYY-MM-DD HH:mm:ss`. For example, **'2019-03-29 22:23:10'**).
 
-![](http://oi64.tinypic.com/akae87.jpg)
+![](http://oi68.tinypic.com/a46ck7.jpg)
 
 It'll open up a **grant** popup for the user to approve. It'll have the sender information and also details about the grant request. If the user approves this request, it'll be send to the NuCypher network for processing.
 
 ###### revoke
 This API call is used to invoke a revoke request waiting for user's permission to approve or reject the request.
 ```js
-await nuBox.revoke(label);
+await nuBox.revoke(label, bvk);
 ```
-It expects one argument: `label`.
+It expects two arguments: `label` and `bvk` (Bob's verifying key).
 
-![](http://oi65.tinypic.com/2qd1h60.jpg)
+![](http://oi65.tinypic.com/mb7b6u.jpg)
 
 It'll open up a **revoke** popup for the user to approve. It'll have the sender information and also details about the revoke request. If the user approves this request, it'll be send to the NuCypher network for processing.
 
@@ -109,19 +109,25 @@ It has the following features:
 * Retrieve `Bob's encrypting and verifying keys`
 * `Encrypt` a block of text.
 * `Decrypt` a block of text
-* `Grant` access for the label, so that `decrypt` operation can pass.
+* `Grant` access for Bob for the label, so that `decrypt` operation can pass for Bob (can autoload Bob's details).
+* `Revoke` access for Bob for the label, so that `decrypt` operation will fail for Bob (can autoload Bob's details).
 * Any errors in the above API calls will alert the error message onto the active tab of the browser.
 
-  ![](http://oi63.tinypic.com/2112tjb.jpg)
+  ![](http://oi64.tinypic.com/10faulf.jpg)
   ![](http://oi63.tinypic.com/2enu5b8.jpg)
   ![](http://oi63.tinypic.com/t8rt38.jpg)
   ![](http://oi68.tinypic.com/29o69gm.jpg)
+  ![](http://oi67.tinypic.com/2w3una9.jpg)
+  ![](http://oi65.tinypic.com/9sxnnq.jpg)
 
 # Debugging issues
 * *nuBox* is tested only on version 3.6.0 of Python. Any different version might lead to unexpected outputs.
 * If your *Python* binary is not stored at `/usr/bin/python3.6`, make a symmlink to that location so that the host can run.
 * All run-time errors happening in the host will be stored at `host/err.log` along with the stack trace.
 * If the host crashed because of any of the above reasons, just restart the extension (after fixing the issue).
+
+# Known Nucypher issues
+* Bob cannot retrieve same data twice: https://github.com/nucypher/nucypher/issues/833
 
 
 **Free Software, Hell Yeah!**
