@@ -32,8 +32,8 @@ class Alice(object):
         request["message"] = message
 
         response = requests.put(f"{Alice.alice}/encrypt", data=json.dumps(request))
-        # encrypted = json.loads(response.content)['result']['message_kit']
-        return response
+        encrypted = json.loads(response.content)['result']['message_kit']
+        return encrypted
 
 
 # if __name__ == '__main__':

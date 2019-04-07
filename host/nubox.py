@@ -101,13 +101,8 @@ def parse_message(message_json):
         output = {}
         output["id"] = msg_id
 
-        logging.error(plaintext)
-        logging.error(label)
-
         try:
-            response = Alice.encrypt(label, plaintext)
-            logging.error(response.content)
-            encrypted = json.loads(response.content)['result']['message_kit']
+            encrypted = Alice.encrypt(label, plaintext)
             output["type"] = "success"
             output["result"] = encrypted
         except Exception as e:
@@ -162,17 +157,11 @@ def parse_message(message_json):
         output = {}
         output["id"] = msg_id
 
-        logging.error(encrypted)
-        logging.error(label)
-
         try:
-            response = Bob.decrypt(label, encrypted)
-            logging.error(response.content.decode("utf-8"))
-            plaintext = json.loads(response.content)['result']['cleartexts'][0]
+            plaintext = Bob.decrypt(label, encrypted)
             output["type"] = "success"
             output["result"] = plaintext
         except Exception as e:
-            # logging.error(str(e))
             output["type"] = "failure"
             output["result"] = "Failed to decrypt for this label"
 
