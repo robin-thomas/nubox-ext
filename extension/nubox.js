@@ -65,7 +65,8 @@ const nuBox = {
     }
   },
 
-  grant: async (label, bob_encrypting_key, bob_verifying_key, expiration) => {
+  // noPopup option is honored only if both Alice and Bob are running in same machine.
+  grant: async (label, bob_encrypting_key, bob_verifying_key, expiration, noPopup = false) => {
     try {
       if (label === undefined || label === null) {
         throw new Error('missing label in grant request');
@@ -80,7 +81,7 @@ const nuBox = {
         throw new Error('missing expiration in grant request');
       }
 
-      return await nuBoxCallback.callExtension('grant', [label, bob_encrypting_key, bob_verifying_key, expiration]);
+      return await nuBoxCallback.callExtension('grant', [label, bob_encrypting_key, bob_verifying_key, expiration, noPopup]);
     } catch (err) {
       throw err;
     }
