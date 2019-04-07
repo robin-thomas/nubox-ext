@@ -122,6 +122,19 @@ const grant = (msgId, args, sender) => {
   }
   args[3] = moment(args[3]).format('YYYY-MM-DDTHH:mm:ss') + '.445418Z';
 
+  // noPopup activated.
+  if (args[4] === true) {
+    args[0] = IpfsHttpClient.Buffer.from(args[0]).toString('hex');
+
+    port.postMessage({
+      id: msgId,
+      cmd: 'grant',
+      args: args,
+    });
+
+    return;
+  }
+
   // open up the grant popup which asks for user permission.
   const popup = window.open('grant.html', 'extension_popup',
     `width=340,
@@ -265,8 +278,6 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
           const encrypted = results[0].content.toString();
 
-          console.log(encrypted);
-
           port.postMessage({
             id: msgId,
             cmd: message.cmd,
@@ -364,5 +375,8 @@ const responseListener = (details) => {
 };
 
 chrome.webRequest.onCompleted.addListener(responseListener, {
-  urls: ["http://localhost:4000/download/*"] /* filter */
+  urls: [
+    "http://localhost:4000/download/*",
+    "https://nubox.herokuapp.com/download/*"
+  ] /* filter */
 }, ['responseHeaders']);
