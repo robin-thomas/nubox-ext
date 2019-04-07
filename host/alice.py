@@ -1,6 +1,5 @@
 import requests
 import json
-from base64 import b64decode, b64encode
 
 class Alice(object):
     alice = "http://localhost:8151"
@@ -24,7 +23,7 @@ class Alice(object):
         request["bob_verifying_key"] = bvk
 
         response = requests.delete(f"{Alice.alice}/revoke", data=json.dumps(request))
-        return response #.status_code == 200
+        return response
 
     @staticmethod
     def encrypt(label, message):
@@ -33,8 +32,8 @@ class Alice(object):
         request["message"] = message
 
         response = requests.put(f"{Alice.alice}/encrypt", data=json.dumps(request))
-        encrypted = json.loads(response.content)['result']['message_kit']
-        return encrypted
+        # encrypted = json.loads(response.content)['result']['message_kit']
+        return response
 
 
 # if __name__ == '__main__':

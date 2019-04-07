@@ -95,7 +95,7 @@ const nuBox = {
         throw new Error('missing bob verifying key in revoke request');
       }
 
-      return await nuBoxCallback.callExtension('revoke', [label, bvk]);
+      await nuBoxCallback.callExtension('revoke', [label, bvk]);
     } catch (err) {
       throw err;
     }

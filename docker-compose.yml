@@ -2,7 +2,7 @@ version: '3'
 
 services:
   nucypher-alice:
-    command: /usr/local/bin/nucypher alice run --dev --federated-only --network devnet --teacher-uri 52.14.207.225:9151
+    command: nucypher alice run --dev --federated-only --network devnet --teacher-uri 18.191.238.18:9151
     environment:
       - NUCYPHER_SENTRY_LOGS=0
     image: nucypher:latest
@@ -18,7 +18,7 @@ services:
     tty: true
 
   nucypher-bob:
-    command: nucypher bob run --dev --federated-only --network devnet --teacher-uri 52.14.207.225:9151
+    command: nucypher bob run --dev --federated-only --network devnet --teacher-uri 18.191.238.18:9151
     environment:
       - NUCYPHER_SENTRY_LOGS=0
     image: nucypher:latest

@@ -1,5 +1,1 @@
 
-[submodule "host/nucypher"]
-	path = host/nucypher
-	url = git@github.com:robin-thomas/nucypher
-	branch = active-policy-fix

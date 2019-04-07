@@ -101,8 +101,13 @@ def parse_message(message_json):
         output = {}
         output["id"] = msg_id
 
+        logging.error(plaintext)
+        logging.error(label)
+
         try:
-            encrypted = Alice.encrypt(label, plaintext)
+            response = Alice.encrypt(label, plaintext)
+            logging.error(response.content)
+            encrypted = json.loads(response.content)['result']['message_kit']
             output["type"] = "success"
             output["result"] = encrypted
         except Exception as e:
@@ -138,15 +143,14 @@ def parse_message(message_json):
         output = {}
         output["id"] = msg_id
 
-        if ("result" in output) == False:
-            response = Alice.revoke(label, bvk)
-
-            if response.status_code == 200:
-                output["type"] = "success"
-                output["result"] = True
-            else:
-                output["type"] = "failure"
-                output["result"] = response.content.decode("utf-8")
+        response = Alice.revoke(label, bvk)
+        if response.status_code == 200:
+            output["type"] = "success"
+            output["result"] = "Revoked"
+        else:
+            logging.error(response.content.decode("utf-8"))
+            output["type"] = "failure"
+            output["result"] = response.content.decode("utf-8")
 
         send_message(json.dumps(output))
 
@@ -158,13 +162,19 @@ def parse_message(message_json):
         output = {}
         output["id"] = msg_id
 
+        logging.error(encrypted)
+        logging.error(label)
+
         try:
-            plaintext = Bob.decrypt(label, encrypted)
+            response = Bob.decrypt(label, encrypted)
+            logging.error(response.content.decode("utf-8"))
+            plaintext = json.loads(response.content)['result']['cleartexts'][0]
             output["type"] = "success"
             output["result"] = plaintext
-        except:
+        except Exception as e:
+            # logging.error(str(e))
             output["type"] = "failure"
-            output["result"] = "failed to decrypt for this label"
+            output["result"] = "Failed to decrypt for this label"
 
         send_message(json.dumps(output))
 
