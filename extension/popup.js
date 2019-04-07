@@ -1,16 +1,26 @@
-const getKeysButton = $('#get-keys');
-const encryptButton = $('#encrypt-btn');
-const decryptButton = $('#decrypt-btn');
-const grantButton = $('#grant-btn');
-const revokeButton = $('#revoke-btn');
+const getKeysButton       = $('#get-keys');
+const encryptButton       = $('#encrypt-btn');
+const decryptButton       = $('#decrypt-btn');
+const grantButton         = $('#grant-btn');
+const revokeButton        = $('#revoke-btn');
+const autofillGrantButton = $('#autofill-bob-grant-btn');
+const autofillRevokeButton = $('#autofill-bob-revoke-btn');
 
-window.onload = (e) => {
+$(document).ready((e) => {
   $('.offline').css('visibility', 'hidden');
   $('.online').css('visibility', 'hidden');
   getKeysButton.prop('disabled', true);
   encryptButton.prop('disabled', true);
   decryptButton.prop('disabled', true);
   grantButton.prop('disabled', true);
+  revokeButton.prop('disabled', true);
+  autofillGrantButton.prop('disabled', true);
+  autofillRevokeButton.prop('disabled', true);
+
+  $('#popup-expiration-grant').datepicker({
+    minDate: new Date(new Date().getTime() + (24 * 60 * 60 * 1000)),
+    dateFormat: 'yy-mm-dd',
+  });
 
   const msgId = Math.random().toString(36).substring(7);
 
@@ -32,9 +42,12 @@ window.onload = (e) => {
       encryptButton.prop('disabled', false);
       decryptButton.prop('disabled', false);
       grantButton.prop('disabled', false);
+      revokeButton.prop('disabled', false);
+      autofillGrantButton.prop('disabled', false);
+      autofillRevokeButton.prop('disabled', false);
     }
   });
-}
+});
 
 const callExtension = (cmd, args) => {
   return new Promise((resolve, reject) => {
@@ -112,10 +125,25 @@ decryptButton.on('click', async () => {
 grantButton.on('click', async () => {
   try {
     const label = $('#popup-label-grant').val();
+    if (label === undefined || label === null || label.trim().length === 0) {
+      throw new Error('Missing label in grant request');
+    }
+    const bek = $('#popup-bek-grant').val();
+    if (bek === undefined || bek === null || bek.trim().length === 0) {
+      throw new Error('Missing bek in grant request');
+    }
+    const bvk = $('#popup-bvk-grant').val();
+    if (bvk === undefined || bvk === null || bvk.trim().length === 0) {
+      throw new Error('Missing bvk in grant request');
+    }
+    const expiration = $('#popup-expiration-grant').val();
+    if (expiration === undefined || expiration === null || expiration.trim().length === 0) {
+      $('#popup-expiration-grant').datepicker('show');
+      return;
+    }
 
     // Ask for grant.
-    const output = await callExtension('bob_keys', []);
-    await callExtension('grant', [label, output.bek, output.bvk, '2020-01-01 00:00:00']);
+    await callExtension('grant', [label, bek, bvk, expiration + ' 00:00:00']);
 
   } catch (err) {
     throwError(err);
@@ -125,10 +153,37 @@ grantButton.on('click', async () => {
 revokeButton.on('click', async () => {
   try {
     const label = $('#popup-label-revoke').val();
+    if (label === undefined || label === null || label.trim().length === 0) {
+      throw new Error('Missing label in revoke request');
+    }
     const bvk = $('#popup-bvk-revoke').val();
+    if (bvk === undefined || bvk === null || bvk.trim().length === 0) {
+      throw new Error('Missing bvk in revoke request');
+    }
 
     // Ask for revoke.
     await callExtension('revoke', [label, bvk]);
+
+  } catch (err) {
+    throwError(err);
+  }
+});
+
+autofillGrantButton.on('click', async () => {
+  try {
+    const output = await callExtension('bob_keys', []);
+    $('#popup-bek-grant').val(output.bek);
+    $('#popup-bvk-grant').val(output.bvk);
+
+  } catch (err) {
+    throwError(err);
+  }
+});
+
+autofillRevokeButton.on('click', async () => {
+  try {
+    const output = await callExtension('bob_keys', []);
+    $('#popup-bvk-revoke').val(output.bvk);
 
   } catch (err) {
     throwError(err);

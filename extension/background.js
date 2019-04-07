@@ -182,7 +182,7 @@ const revoke = (msgId, args, sender) => {
   // open up the grant popup which asks for user permission.
   const popup = window.open('revoke.html', 'extension_popup',
     `width=315,
-     height=515,
+     height=555,
      top=25,
      left=25,
      toolbar=no,
@@ -205,6 +205,7 @@ const revoke = (msgId, args, sender) => {
   popup.addEventListener('load', (e) => {
     popup.$('#card-nubox-url').html(sender.url);
     popup.$('#card-nubox-label').html(args[0]);
+    popup.$('#nubox-revoke-bvk').val(args[1]);
 
     popup.$('#nubox-grant-cancel').on('click', (e) => {
       // If the user rejects it, send back the failure message.

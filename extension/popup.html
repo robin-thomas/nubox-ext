@@ -1,6 +1,7 @@
 <!DOCTYPE html>
   <html>
     <head>
+      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.css">
       <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css">
       <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.3/css/all.css">
       <style>
@@ -17,7 +18,7 @@
       </style>
     </head>
     <body>
-      <div class="card" style="width:300px;height:500px;border:none">
+      <div class="card" style="width:300px;height:100%;border:none">
         <div class="card-header">
           <img class="card-img-top" src="icons/logo_128x128.png" style="width:32px;height:32px" />
           <span>nuBox</span>
@@ -108,7 +109,26 @@
                     <label for="popup-label-grant"><b>Label:</b></label>
                     <input type="text" class="form-control" id="popup-label-grant" placeholder="" >
                   </div>
-                  <button type="button" class="btn btn-primary" id="grant-btn">Grant</button>
+                  <div class="form-group">
+                    <label for="popup-bek-grant"><b>Bob's encrypting key:</b></label>
+                    <input type="text" class="form-control" id="popup-bek-grant" placeholder="" >
+                  </div>
+                  <div class="form-group">
+                    <label for="popup-bvk-grant"><b>Bob's verifying key:</b></label>
+                    <input type="text" class="form-control" id="popup-bvk-grant" placeholder="" >
+                  </div>
+                  <div class="form-group">
+                    <label for="popup-expiration-grant"><b>Grant expire:</b></label>
+                    <input type="text" class="form-control" id="popup-expiration-grant" placeholder="" >
+                  </div>
+                  <div class="row no-gutters">
+                    <div class="col">
+                      <button type="button" class="btn btn-primary" id="grant-btn">Grant</button>
+                    </div>
+                    <div class="col-auto">
+                      <button type="button" class="btn btn-outline-success" id="autofill-bob-grant-btn">Autofill Bob</button>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -128,7 +148,14 @@
                     <label for="popup-bvk-revoke"><b>Bob's verifying key:</b></label>
                     <input type="text" class="form-control" id="popup-bvk-revoke" placeholder="" >
                   </div>
-                  <button type="button" class="btn btn-primary" id="revoke-btn">Revoke</button>
+                  <div class="row no-gutters">
+                    <div class="col">
+                      <button type="button" class="btn btn-primary" id="revoke-btn">Revoke</button>
+                    </div>
+                    <div class="col-auto">
+                      <button type="button" class="btn btn-outline-success" id="autofill-bob-revoke-btn">Autofill Bob</button>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -141,7 +168,8 @@
         </ul>
       </div>
     </body>
-    <script type="text/javascript" src="jquery-3.3.1.slim.min.js"></script>
+    <script type="text/javascript" src="jquery.min.js"></script>
     <script type="text/javascript" src="bootstrap.min.js"></script>
+    <script type="text/javascript" src="jquery-ui.min.js"></script>
     <script type="text/javascript" src="popup.js"></script>
   </html>

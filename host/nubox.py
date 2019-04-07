@@ -125,8 +125,9 @@ def parse_message(message_json):
             output["type"] = "success"
             output["result"] = "granted"
         else:
+            logging.error(response.content.decode("utf-8"))
             output["type"] = "failure"
-            output["result"] = response.content.decode("utf-8")
+            output["result"] = "Failed to grant for this label"
 
         send_message(json.dumps(output))
 
@@ -145,7 +146,7 @@ def parse_message(message_json):
         else:
             logging.error(response.content.decode("utf-8"))
             output["type"] = "failure"
-            output["result"] = response.content.decode("utf-8")
+            output["result"] = "Failed to revoke for this label"
 
         send_message(json.dumps(output))
 
