@@ -289,7 +289,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
 
 const Worker = {
-  getNextBlock: (hash, path) => {
+  getNextBlock: (hash, label) => {
     return new Promise((resolve, reject) => {
       const msgId = Math.random().toString(36).substring(7);
 
@@ -302,18 +302,18 @@ const Worker = {
       ipfs.get(hash).then((results) => {
         const encrypted = results[0].content.toString();
 
-        path = IpfsHttpClient.Buffer.from(path).toString('hex');
+        label = IpfsHttpClient.Buffer.from(label).toString('hex');
 
         port.postMessage({
           id: msgId,
           cmd: 'decrypt',
-          args: [encrypted, path],
+          args: [encrypted, label],
         });
       });
     });
   },
 
-  downloadFile: async (ipfsList, fileName, path) => {
+  downloadFile: async (ipfsList, fileName, label) => {
     let writer = null;
 
     try {
@@ -323,7 +323,7 @@ const Worker = {
 
       // Read all the blocks from ipfs and join them.
       for (const hash of ipfsList) {
-        const decryptedB64 = await Worker.getNextBlock(hash, path);
+        const decryptedB64 = await Worker.getNextBlock(hash, label);
         const decrypted = IpfsHttpClient.Buffer.from(decryptedB64, 'base64');
         writer.write(decrypted);
       }
@@ -359,7 +359,7 @@ const responseListener = (details) => {
   // Trigger download.
   if (nubox) {
     console.log(data);
-    Worker.downloadFile(data.ipfs, data.filename, data.path);
+    Worker.downloadFile(data.ipfs, data.filename, data.label);
   }
 };
 

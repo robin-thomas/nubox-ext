@@ -38,5 +38,5 @@ class Bob(object):
         retrieval["message_kit"] = encrypted
 
         response = requests.post(f"{Bob.bob}/retrieve", data=json.dumps(retrieval))
-        plaintext = json.loads(response.content)['result']['cleartexts'][0]
-        return plaintext
+        # plaintext = json.loads(response.content)['result']['cleartexts'][0]
+        return response

@@ -158,8 +158,12 @@ def parse_message(message_json):
         output = {}
         output["id"] = msg_id
 
+        logging.error(label)
+
         try:
-            plaintext = Bob.decrypt(label, encrypted)
+            response = Bob.decrypt(label, encrypted)
+            logging.error(response.content)
+            plaintext = json.loads(response.content)['result']['cleartexts'][0]
             output["type"] = "success"
             output["result"] = plaintext
         except Exception as e:
