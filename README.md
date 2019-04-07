@@ -1,8 +1,7 @@
 # nuBox chrome extension
 ![](http://i67.tinypic.com/34ooa6h_th.png)
 
-[![Python 3.6](https://img.shields.io/badge/ubuntu-16.04-brightgreen.svg)]
-[![Python 3.6](https://img.shields.io/badge/python-3.6-blue.svg)](https://www.python.org/downloads/release/python-360/) [![License](https://img.shields.io/badge/license-MIT-green.svg)](https://opensource.org/licenses/MIT)
+![](https://img.shields.io/badge/ubuntu-16.04-brightgreen.svg) [![Python 3.6](https://img.shields.io/badge/python-3.6-blue.svg)](https://www.python.org/downloads/release/python-360/) [![License](https://img.shields.io/badge/license-MIT-green.svg)](https://opensource.org/licenses/MIT)
 
 # Table of Contents
 1. [Who is it for?](#who-is-it-for)
