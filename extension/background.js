@@ -4,307 +4,323 @@ const port = chrome.runtime.connectNative('com.google.chrome.nubox');
 // (for uploads to ipfs).
 let ipfsEncrypts = {};
 
-let callbacks = {};
-const registerCallback = (id, callback) => {
-  callbacks[id] = callback;
+const Approval = {
+  key: 'nuBox',
+
+  getAll: () => {
+    const items = localStorage.getItem(Approval.key);
+    return (items === null || items === undefined) ? [] : items;
+  },
+
+  isApproved: (value) => {
+    if (value === null || value === undefined) {
+      return false;
+    }
+
+    const items = Approval.getAll();
+    return items.indexOf(value) > -1;
+  },
+
+  approve: (value) => {
+    let items = Approval.getAll();
+    items.push(value);
+
+    localStorage.removeItem(Approval.key);
+    localStorage.setItem(Approval.key, JSON.stringify(items));
+  },
+
+  reset: () => {
+    localStorage.removeItem(Approval.key);
+    localStorage.setItem(Approval.key, JSON.stringify([]));
+  }
 };
+Approval.reset();
 
-port.onMessage.addListener((response) => {
-  console.log(response);
+const Callbacks = {
+  callbacks: {},
 
-  if (response.id !== undefined &&
-      callbacks[response.id] !== undefined) {
+  registerCallback: (id, callback) => {
+    Callbacks.callbacks[id] = callback;
+  },
 
-    const msgId = response.id;
+  sendResponse: (msgId, type, msg) => {
+    if (Callbacks.callbacks[msgId] !== undefined) {
+      Callbacks.callbacks[msgId]({
+        type: type,
+        result: msg,
+      });
 
-    if (callbacks[response.id].resolve !== undefined) {
-      if (response.type === 'success') {
-        callbacks[response.id].resolve(response.result);
-      } else {
-        callbacks[response.id].reject(response.result);
+      delete Callbacks.callbacks[msgId];
+    }
+  },
+
+  onMessage: (response) => {
+    console.log(response);
+
+    if (response.id !== undefined &&
+        Callbacks.callbacks[response.id] !== undefined) {
+
+      const msgId = response.id;
+
+      if (Callbacks.callbacks[response.id].resolve !== undefined) {
+        if (response.type === 'success') {
+          Callbacks.callbacks[response.id].resolve(response.result);
+        } else {
+          Callbacks.callbacks[response.id].reject(response.result);
+        }
+
+        delete Callbacks.callbacks[response.id];
+        return;
       }
 
-      delete callbacks[response.id];
-      return;
-    }
+      // Check whether its an encrypt request.
+      if (ipfsEncrypts[msgId] !== undefined &&
+          response.type === 'success') {
+        // delete it from the request.
+        delete ipfsEncrypts[msgId];
 
-    // Check whether its an encrypt request.
-    if (ipfsEncrypts[msgId] !== undefined &&
-        response.type === 'success') {
-      // delete it from the request.
-      delete ipfsEncrypts[msgId];
+        // Upload it to IPFS.
+        const ipfs = IpfsHttpClient('ipfs.infura.io', '5001', { protocol: 'https' });
+        const content = IpfsHttpClient.Buffer.from(response.result);
 
-      // Upload it to IPFS.
-      const ipfs = IpfsHttpClient('ipfs.infura.io', '5001', { protocol: 'https' });
-      const content = IpfsHttpClient.Buffer.from(response.result);
-
-      ipfs.add(content).then((results) => {
-        callbacks[response.id]({
-          type: 'success',
-          result: results[0].hash,
+        ipfs.add(content).then((results) => {
+          Callbacks.sendResponse(response.id, 'success', results[0].hash);
+        }).catch((err) => {
+          Callbacks.sendResponse(response.id, 'failure', err.message);
         });
 
-        delete callbacks[response.id];
-      }).catch((err) => {
-        callbacks[response.id]({
-          type: 'failure',
-          result: err.message,
-        });
-
-        delete callbacks[response.id];
-      });
-
-    } else {
-      callbacks[response.id]({
-        type: response.type,
-        result: response.result,
-      });
-
-      delete callbacks[response.id];
+      } else {
+        Callbacks.sendResponse(response.id, response.type, response.result);
+      }
     }
-  }
-});
+  },
+}
 
-chrome.declarativeContent.onPageChanged.removeRules(undefined, function() {
-  chrome.declarativeContent.onPageChanged.addRules([{
-    conditions: [new chrome.declarativeContent.PageStateMatcher({
-      pageUrl: {urlMatches: '(localhost:4000)|nubox.herokuapp.com'},
-    })],
-    actions: [new chrome.declarativeContent.ShowPageAction()]
-  }]);
-});
+const Process = {
+  main: (message, sender, sendResponse) => {
+    console.log(message);
 
-const readBlock = (msgId, blob, path, ipfsUpload) => {
-  const xhr = new XMLHttpRequest();
-  xhr.open('GET', blob, true);
-  xhr.responseType = 'blob';
-  xhr.onload = function(e) {
-    if (this.status == 200) {
-      const blobContent = this.response;
+    // Register the callback for the response from the host.
+    const msgId = message.msgId;
+    Callbacks.registerCallback(msgId, sendResponse);
 
-      const r = new FileReader();
-      r.onload = function(e) {
-        const label = IpfsHttpClient.Buffer.from(path).toString('hex');
-        const blockB64 = IpfsHttpClient.Buffer.from(r.result).toString('base64');
-
-        // Encrypt it using host protocol.
-        if (ipfsUpload) {
-          ipfsEncrypts[msgId] = msgId;
-        }
-        port.postMessage({
-          id: msgId,
-          cmd: 'encrypt',
-          args: [blockB64, label],
-        });
-      };
-
-      r.readAsArrayBuffer(blobContent);
+    // Check whether host is approved. If not, fail the request.
+    if (message.cmd !== 'approve') {
+      // Not approved.
+      if (!Approval.isApproved(message.args.host)) {
+        Callbacks.sendResponse(msgId, 'failure', 'Host not approved');
+        return;
+      }
     }
-  };
-  xhr.send();
-};
 
-const grant = (msgId, args, sender) => {
-  // Validate user input.
-  if (!(moment(args[3], 'YYYY-MM-DD HH:mm:ss', true).isValid())) {
-    callbacks[msgId]({
-      type: 'failure',
-      result: 'Invalid expiration date string (not ISO 8601)',
-    });
-    return;
-  }
-  if (moment().isAfter(args[3])) {
-    callbacks[msgId]({
-      type: 'failure',
-      result: 'Expiration date string is in the past or today',
-    });
-    return;
-  }
-  args[3] = moment(args[3]).format('YYYY-MM-DDTHH:mm:ss') + '.445418Z';
+    // Convert args to correct encoding.
+    if (message.args.label !== undefined) {
+      message.args.label = IpfsHttpClient.Buffer.from(message.args.label).toString('hex');
+    }
+    if (message.args.plaintext !== undefined) {
+      message.args.plaintext = IpfsHttpClient.Buffer.from(message.args.plaintext).toString('base64');
+    }
 
-  // noPopup activated.
-  if (args[4] === true) {
-    args[0] = IpfsHttpClient.Buffer.from(args[0]).toString('hex');
+    // Operations based on cmd.
+    switch (message.cmd) {
+      case 'approve':
+        Process.approve(msgId, message.args);
+        break;
+
+      case 'grant':
+        Process.grant(msgId, message.args, sender);
+        break;
+
+      case 'revoke':
+        Process.revoke(msgId, message.args, sender);
+        break;
+
+      case 'encrypt':
+        Process.encrypt(msgId, message.args);
+        break;
+
+      case 'decrypt':
+        Process.decrypt(msgId, message.args);
+        break;
+
+      case 'readBlock':
+        Process.readBlock(msgId, message.args);
+        break;
+    }
+  },
+
+  approve: (msgId, args) => {
+    Approval.approve(args.host);
+    Callbacks.sendResponse(msgId, 'success', 'Host is approved');
+  },
+
+  encrypt: (msgId, args) => {
+    if (args.ipfs === true) {
+      ipfsEncrypts[msgId] = msgId;
+    }
 
     port.postMessage({
       id: msgId,
-      cmd: 'grant',
-      args: args,
+      cmd: 'encrypt',
+      args: [ args.plaintext, args.label ] ,
     });
+  },
 
-    return;
-  }
+  decrypt: (msgId, args) => {
+    if (args.ipfs === true) {
+      const ipfs = IpfsHttpClient('ipfs.infura.io', '5001', { protocol: 'https' });
+      ipfs.get(args.encrypted).then((results) => {
+        // TODO: how to handle error.
 
-  // open up the grant popup which asks for user permission.
-  const popup = window.open('grant.html', 'extension_popup',
-    `width=340,
-     height=725,
-     top=25,
-     left=25,
-     toolbar=no,
-     location=no,
-     status=yes,
-     scrollbars=no,
-     resizable=no,
-     status=no,
-     menubar=no,
-     directories=no`);
+        const encrypted = results[0].content.toString();
 
-  const popupGrantCloseHandler = (e) => {
-    callbacks[msgId]({
-      type: 'failure',
-      result: 'User has rejected the grant request',
-    });
-  };
-  popup.addEventListener('beforeunload', popupGrantCloseHandler);
-
-  popup.addEventListener('load', (e) => {
-    popup.$('#nubox-grant-bek').val(args[1]);
-    popup.$('#nubox-grant-bvk').val(args[2]);
-    popup.$('#nubox-grant-exp').val(args[3]);
-    popup.$('#card-nubox-url').html(sender.url);
-    popup.$('#card-nubox-label').html(args[0]);
-
-    popup.$('#nubox-grant-cancel').on('click', (e) => {
-      // If the user rejects it, send back the failure message.
-      callbacks[msgId]({
-        type: 'failure',
-        result: 'User has rejected the grant request',
+        port.postMessage({
+          id: msgId,
+          cmd: 'decrypt',
+          args: [ encrypted, args.label ],
+        });
       });
-      popup.close();
+    }
+
+    port.postMessage({
+      id: msgId,
+      cmd: 'decrypt',
+      args: [ args.encrypted, args.label ],
     });
-    popup.$('#nubox-grant-confirm').on('click', () => {
-      // Cancel the popup event handler.
-      popup.removeEventListener('beforeunload', popupGrantCloseHandler, false);
+  },
 
-      // If the user approves, send it to the native host for approval.
-      args[0] = IpfsHttpClient.Buffer.from(args[0]).toString('hex');
+  grant: (msgId, args, sender) => {
+    // Validate user input.
+    if (!(moment(args.expiration, 'YYYY-MM-DD HH:mm:ss', true).isValid())) {
+      Callbacks.sendResponse(msgId, 'failure', 'Invalid expiration date string (not ISO 8601)');
+      return;
+    }
+    if (moment().isAfter(args.expiration)) {
+      Callbacks.sendResponse(msgId, 'failure', 'Expiration date string is in the past or today');
+      return;
+    }
+    args.expiration = moment(args[3]).format('YYYY-MM-DDTHH:mm:ss') + '.445418Z';
 
+    // noPopup activated.
+    if (args.noPopup === true) {
       port.postMessage({
         id: msgId,
         cmd: 'grant',
-        args: args,
+        args: [ args.label, args.bek, args.bvk, args.expiration ],
       });
 
-      popup.close();
-    });
-  }, false);
-};
-
-const revoke = (msgId, args, sender) => {
-  // open up the grant popup which asks for user permission.
-  const popup = window.open('revoke.html', 'extension_popup',
-    `width=315,
-     height=555,
-     top=25,
-     left=25,
-     toolbar=no,
-     location=no,
-     status=yes,
-     scrollbars=no,
-     resizable=no,
-     status=no,
-     menubar=no,
-     directories=no`);
-
-  const popupRevokeCloseHandler = (e) => {
-    callbacks[msgId]({
-      type: 'failure',
-      result: 'User has rejected the revoke request',
-    });
-  };
-  popup.addEventListener('beforeunload', popupRevokeCloseHandler);
-
-  popup.addEventListener('load', (e) => {
-    popup.$('#card-nubox-url').html(sender.url);
-    popup.$('#card-nubox-label').html(args[0]);
-    popup.$('#nubox-revoke-bvk').val(args[1]);
-
-    popup.$('#nubox-grant-cancel').on('click', (e) => {
-      // If the user rejects it, send back the failure message.
-      callbacks[msgId]({
-        type: 'failure',
-        result: 'User has rejected the revoke request',
-      });
-      popup.close();
-    });
-    popup.$('#nubox-grant-confirm').on('click', (e) => {
-      // Cancel the popup event handler.
-      popup.removeEventListener('beforeunload', popupRevokeCloseHandler, false);
-
-      // If the user approves, send it to the native host for approval.
-      args[0] = IpfsHttpClient.Buffer.from(args[0]).toString('hex');
-      port.postMessage({
-        id: msgId,
-        cmd: 'revoke',
-        args: args,
-      });
-      popup.close();
-    });
-  }, false);
-};
-
-// From the nuBox content/popup script.
-chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-  console.log(message);
-
-  const msgId = message.msgId;
-  registerCallback(msgId, sendResponse);
-
-  // Read a block of data from a local file,
-  // encrypt it using nucypher and return it back.
-  // option to upload it to IPFS too.
-  if (message.cmd === 'readBlock') {
-    readBlock(msgId, message.args.blob, message.args.path, message.args.ipfs);
-  } else if (message.cmd === 'grant') {
-    grant(msgId, message.args, sender);
-  } else if (message.cmd === 'revoke') {
-    revoke(msgId, message.args, sender);
-  } else {
-    if (message.cmd === 'encrypt') {
-      if (message.args[2] === true /* ipfs */) {
-        ipfsEncrypts[msgId] = msgId;
-      }
-      message.args[0] = IpfsHttpClient.Buffer.from(message.args[0]).toString('base64');
-      message.args[1] = IpfsHttpClient.Buffer.from(message.args[1]).toString('hex');
-
-    } else if (message.cmd === 'decrypt') {
-      message.args[1] = IpfsHttpClient.Buffer.from(message.args[1]).toString('hex');
-
-      if (message.args[2] === true) {
-        const ipfs = IpfsHttpClient('ipfs.infura.io', '5001', { protocol: 'https' });
-        ipfs.get(message.args[0]).then((results) => {
-          // TODO: how to handle error.
-
-          const encrypted = results[0].content.toString();
-
-          port.postMessage({
-            id: msgId,
-            cmd: message.cmd,
-            args: [encrypted, message.args[1]],
-          });
-        });
-        return true;
-      }
+      return;
     }
 
-    port.postMessage({
-      id: msgId,
-      cmd: message.cmd,
-      args: message.args,
-    });
-  }
+    // open up the grant popup which asks for user permission.
+    const popup = window.open('grant.html', 'extension_popup',
+      'width=340,height=725,top=25,left=25,toolbar=no,location=no,scrollbars=no,resizable=no,status=no,menubar=no,directories=no');
 
-  return true;
-});
+    const popupGrantCloseHandler = (e) => {
+      Callbacks.sendResponse(msgId, 'failure', 'User has rejected the grant request');
+    };
+    popup.addEventListener('beforeunload', popupGrantCloseHandler);
 
+    popup.addEventListener('load', (e) => {
+      popup.$('#nubox-grant-bek').val(args.bek);
+      popup.$('#nubox-grant-bvk').val(args.bvk);
+      popup.$('#nubox-grant-exp').val(args.expiration);
+      popup.$('#card-nubox-url').html(sender.url);
+      popup.$('#card-nubox-label').html(args.label);
 
-const Worker = {
+      // If the user rejects it, send back the failure message.
+      popup.$('#nubox-grant-cancel').on('click', (e) => {
+        Callbacks.sendResponse(msgId, 'failure', 'User has rejected the grant request');
+        popup.close();
+      });
+      popup.$('#nubox-grant-confirm').on('click', () => {
+        // Cancel the popup event handler.
+        popup.removeEventListener('beforeunload', popupGrantCloseHandler, false);
+
+        // If the user approves, send it to the native host for approval.
+        port.postMessage({
+          id: msgId,
+          cmd: 'grant',
+          args: [ args.label, args.bek, args.bvk, args.expiration ],
+        });
+
+        popup.close();
+      });
+    }, false);
+  },
+
+  revoke: (msgId, args, sender) => {
+    // open up the grant popup which asks for user permission.
+    const popup = window.open('revoke.html', 'extension_popup',
+      'width=315,height=555,top=25,left=25,toolbar=no,location=no,scrollbars=no,resizable=no,status=no,menubar=no,directories=no');
+
+    const popupRevokeCloseHandler = (e) => {
+      Callbacks.sendResponse(msgId, 'failure', 'User has rejected the revoke request');
+    };
+    popup.addEventListener('beforeunload', popupRevokeCloseHandler);
+
+    popup.addEventListener('load', (e) => {
+      popup.$('#card-nubox-url').html(sender.url);
+      popup.$('#card-nubox-label').html(args.label);
+      popup.$('#nubox-revoke-bvk').val(args.bvk);
+
+      // If the user rejects it, send back the failure message.
+      popup.$('#nubox-grant-cancel').on('click', (e) => {
+        Callbacks.sendResponse(msgId, 'failure', 'User has rejected the revoke request');
+        popup.close();
+      });
+      popup.$('#nubox-grant-confirm').on('click', (e) => {
+        // Cancel the popup event handler.
+        popup.removeEventListener('beforeunload', popupRevokeCloseHandler, false);
+
+        // If the user approves, send it to the native host for approval.
+        port.postMessage({
+          id: msgId,
+          cmd: 'revoke',
+          args: [ args.label, args.bvk ],
+        });
+
+        popup.close();
+      });
+    }, false);
+  },
+
+  readBlock: (msgId, args) => {
+    const xhr = new XMLHttpRequest();
+    xhr.open('GET', args.blob, true);
+    xhr.responseType = 'blob';
+    xhr.onload = function(e) {
+      if (this.status == 200) {
+        const blobContent = this.response;
+
+        const r = new FileReader();
+        r.onload = function(e) {
+          const blockB64 = IpfsHttpClient.Buffer.from(r.result).toString('base64');
+
+          // Encrypt it using host protocol.
+          if (args.ipfs) {
+            ipfsEncrypts[msgId] = msgId;
+          }
+          port.postMessage({
+            id: msgId,
+            cmd: 'encrypt',
+            args: [ blockB64, args.label ],
+          });
+        };
+
+        r.readAsArrayBuffer(blobContent);
+      }
+    };
+    xhr.send();
+  },
+};
+
+const Downloader = {
   getNextBlock: (hash, label) => {
     return new Promise((resolve, reject) => {
       const msgId = Math.random().toString(36).substring(7);
 
-      registerCallback(msgId, {
+      Callbacks.registerCallback(msgId, {
         resolve: resolve,
         reject: reject,
       });
@@ -318,7 +334,7 @@ const Worker = {
         port.postMessage({
           id: msgId,
           cmd: 'decrypt',
-          args: [encrypted, label],
+          args: [ encrypted, label ],
         });
       });
     });
@@ -334,7 +350,7 @@ const Worker = {
 
       // Read all the blocks from ipfs and join them.
       for (const hash of ipfsList) {
-        const decryptedB64 = await Worker.getNextBlock(hash, label);
+        const decryptedB64 = await Downloader.getNextBlock(hash, label);
         const decrypted = IpfsHttpClient.Buffer.from(decryptedB64, 'base64');
         writer.write(decrypted);
       }
@@ -351,7 +367,26 @@ const Worker = {
   },
 };
 
-const responseListener = (details) => {
+chrome.declarativeContent.onPageChanged.removeRules(undefined, function() {
+  chrome.declarativeContent.onPageChanged.addRules([{
+    conditions: [new chrome.declarativeContent.PageStateMatcher({
+      pageUrl: {urlMatches: '(localhost:4000)|nubox.herokuapp.com'},
+    })],
+    actions: [new chrome.declarativeContent.ShowPageAction()]
+  }]);
+});
+
+port.onMessage.addListener((response) => Callbacks.onMessage(response));
+
+// From the nuBox content/popup script.
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  Process.main(message, sender, sendResponse);
+  return true;
+});
+
+// Listener to detect download links and download.
+// Only for nuBox. API not exposed for other websites.
+chrome.webRequest.onCompleted.addListener((details) => {
   const headers = details.responseHeaders;
 
   // get the ipfs hashes from the headers.
@@ -369,14 +404,12 @@ const responseListener = (details) => {
 
   // Trigger download.
   if (nubox) {
-    console.log(data);
-    Worker.downloadFile(data.ipfs, data.filename, data.label);
+    Downloader.downloadFile(data.ipfs, data.filename, data.label);
   }
-};
-
-chrome.webRequest.onCompleted.addListener(responseListener, {
-  urls: [
-    "http://localhost:4000/download/*",
-    "https://nubox.herokuapp.com/download/*"
-  ] /* filter */
+},
+{
+  urls: [ /* filter */
+    'http://localhost:4000/download/*',
+    'https://nubox.herokuapp.com/download/*',
+  ]
 }, ['responseHeaders']);

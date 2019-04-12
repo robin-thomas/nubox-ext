@@ -152,4 +152,14 @@ const nuBox = {
       throw err;
     }
   },
+
+  approve: async () => {
+    try {
+      return await nuBoxCallback.callExtension('approve', {
+        host: window.location.hostname,
+      });
+    } catch (err) {
+      throw err;
+    }
+  }
 };
