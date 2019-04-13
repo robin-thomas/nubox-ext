@@ -54,7 +54,9 @@ $(document).ready((e) => {
       $('#popup-bek').val('');
       $('#popup-bvk').val('');
 
-      const output = await callExtension('bob_keys', []);
+      const output = await callExtension('bob_keys', {
+        host: window.location.hostname,
+      });
 
       $('#popup-bek').val(output.bek);
       $('#popup-bvk').val(output.bvk);
@@ -70,7 +72,11 @@ $(document).ready((e) => {
 
       const plaintext = $('#popup-plaintext-encrypt').val();
       const label = $('#popup-label-encrypt').val();
-      const output = await callExtension('encrypt', [plaintext, label]);
+      const output = await callExtension('encrypt', {
+        plaintext: plaintext,
+        label: label,
+        host: window.location.hostname,
+      });
 
       $('#popup-encrypted-encrypt').val(output);
 
@@ -90,7 +96,11 @@ $(document).ready((e) => {
       const encrypted = $('#popup-encrypted-decrypt').val();
       const label = $('#popup-label-decrypt').val();
 
-      const plaintext = await callExtension('decrypt', [encrypted, label]);
+      const plaintext = await callExtension('decrypt', {
+        encrypted: encrypted,
+        label: label,
+        host: window.location.hostname,
+      });
 
       $('#popup-plaintext-decrypt').val(atob(plaintext));
       decryptButton.html(decryptButton.data('original-text')).attr('disabled', false);
@@ -121,7 +131,13 @@ $(document).ready((e) => {
       }
 
       // Ask for grant.
-      await callExtension('grant', [label, bek, bvk, expiration + ' 00:00:00']);
+      await callExtension('grant', {
+        label: label,
+        bek: bek,
+        bvk: bvk,
+        expiration: expiration + ' 00:00:00',
+        host: window.location.hostname,
+      });
 
     } catch (err) {
       throwError(err);
@@ -140,7 +156,11 @@ $(document).ready((e) => {
       }
 
       // Ask for revoke.
-      await callExtension('revoke', [label, bvk]);
+      await callExtension('revoke', {
+        label: label,
+        bvk: bvk,
+        host: window.location.hostname,
+      });
 
     } catch (err) {
       throwError(err);
@@ -149,7 +169,9 @@ $(document).ready((e) => {
 
   autofillGrantButton.on('click', async () => {
     try {
-      const output = await callExtension('bob_keys', []);
+      const output = await callExtension('bob_keys', {
+        host: window.location.hostname,
+      });
       $('#popup-bek-grant').val(output.bek);
       $('#popup-bvk-grant').val(output.bvk);
 
@@ -160,7 +182,9 @@ $(document).ready((e) => {
 
   autofillRevokeButton.on('click', async () => {
     try {
-      const output = await callExtension('bob_keys', []);
+      const output = await callExtension('bob_keys', {
+        host: window.location.hostname,
+      });
       $('#popup-bvk-revoke').val(output.bvk);
 
     } catch (err) {

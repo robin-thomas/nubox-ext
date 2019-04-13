@@ -52,21 +52,26 @@ const Approval = {
     return (items === null || items === undefined) ? [] : JSON.parse(items);
   },
 
-  isApproved: (value) => {
+  isApproved: (value, items = null) => {
     if (value === null || value === undefined) {
       return false;
     }
 
-    const items = Approval.getAll();
+    items = items !== null ? items : Approval.getAll();
     return items.indexOf(value) > -1;
   },
 
   approve: (value) => {
     let items = Approval.getAll();
-    items.push(value);
 
-    localStorage.removeItem(Approval.key);
-    localStorage.setItem(Approval.key, JSON.stringify(items));
+    if (!Approval.isApproved(value, items)) {
+      items.push(value);
+
+      localStorage.removeItem(Approval.key);
+      localStorage.setItem(Approval.key, JSON.stringify(items));
+      console.log(items);
+      console.log(`approving ${chrome.runtime.id}`);
+    }
   },
 
   reset: () => {
@@ -75,6 +80,7 @@ const Approval = {
   }
 };
 Approval.reset();
+Approval.approve(chrome.runtime.id);
 
 const Callbacks = {
   callbacks: {},
@@ -156,6 +162,7 @@ const Process = {
         Callbacks.sendResponse(msgId, 'failure', 'Host not approved', message.cmd);
         return;
       }
+      console.log('approved');
     }
 
     // Convert args to correct encoding.
@@ -168,6 +175,10 @@ const Process = {
 
     // Operations based on cmd.
     switch (message.cmd) {
+      case 'bob_keys':
+        Process.getBobKeys(msgId);
+        break;
+
       case 'isHostRunning':
         Process.isHostRunning(msgId);
         break;
@@ -196,6 +207,14 @@ const Process = {
         Process.readBlock(msgId, message.args);
         break;
     }
+  },
+
+  getBobKeys: (msgId) => {
+    port.postMessage({
+      id: msgId,
+      cmd: 'bob_keys',
+      args: [] ,
+    });
   },
 
   isHostRunning: (msgId) => {
