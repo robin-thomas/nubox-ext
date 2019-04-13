@@ -6,6 +6,7 @@
       <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css">
       <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.3/css/all.css">
       <style>
+        body {height:100vh;}
         .dot {height:10px;width:10px;border-radius:50%;display:inline-block}
         .online-dot {background-color:#28a745}
         .offline-dot {background-color:#dc3545}
@@ -13,160 +14,51 @@
         .offline {color:#dc3545}
         .offline,.online {margin-top:5px;font-size:14px;float:right;text-align:right;visibility:hidden;position:absolute;right:15px}
         ::-webkit-scrollbar {display:none}
-        #accordion {height:375px;overflow-y:scroll}
-        #accordion .card-header {padding:10px 0;background:#6c757d;border-radius:6px 6px 0 0}
-        #accordion .btn-link {color:#fff}
+        nav {padding:25px}
+        .nav-link {color:black;transition:all 0.3s;height:50px;line-height:35px}
+        .nav-link-active,.nav-link-active:hover {background:#FFBCC3;color:#dc3545;border-radius:0 50px 50px 0;font-weight:800}
+        .nav-link:not(.nav-link-active):hover {background:#E2E2E2;border-radius:0 50px 50px 0;color:black}
       </style>
     </head>
     <body>
-      <div class="card" style="width:300px;height:100%;border:none">
+      <div class="card" style="width:100%;height:100%;border:none">
         <div class="card-header">
           <img class="card-img-top" src="icons/logo_128x128.png" style="width:32px;height:32px" />
           <span>nuBox</span>
           <span class="online"><span class="dot online-dot"></span>&nbsp;Online</span>
           <span class="offline"><span class="dot offline-dot"></span>&nbsp;Offline</span>
         </div>
-        <div class="card-body">
-          <p class="card-text">This extension can get NuCypher working on the browser side! Yay!</p>
-
-          <div id="accordion">
-            <div class="card">
-              <div class="card-header" id="headingOne">
-                <button class="btn btn-link" data-toggle="collapse" data-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
-                  Get Bob's Keys
-                </button>
-              </div>
-              <div id="collapseOne" class="collapse" aria-labelledby="headingOne" data-parent="#accordion">
-                <div class="card-body">
-                  <div class="form-group">
-                    <label for="popup-bek"><b>Bob's Encrypting key:</b></label>
-                    <input type="text" class="form-control" id="popup-bek" placeholder="" readonly>
-                  </div>
-                  <div class="form-group">
-                    <label for="popup-bek"><b>Bob's Verifying key:</b></label>
-                    <input type="text" class="form-control" id="popup-bvk" placeholder="" readonly>
-                  </div>
-                  <button type="button" class="btn btn-primary" id="get-keys">Get Bob's keys</button>
-                </div>
-              </div>
+        <div class="card-body" style="padding:0">
+          <div class="row no-gutters" style="height:100%">
+            <div class="col-md-2" style="border-right:1px solid rgba(0,0,0,.125);">
+              <nav>
+                <ul class="nav flex-column">
+                  <li class="nav-item">
+                    <a class="nav-link nav-link-active" href="#">
+                      <div class="row no-gutters">
+                        <div class="col-md-3"><i class="fas fa-tv"></i></div>
+                        <div class="col-md-9">My nuBox</div>
+                      </div>
+                    </a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="#">
+                      <div class="row no-gutters">
+                        <div class="col-md-3"><i class="fas fa-exclamation-circle"></i></div>
+                        <div class="col-md-9">Logging</div>
+                      </div>
+                    </a>
+                  </li>
+                </ul>
+              </nav>
             </div>
-            <div class="card">
-              <div class="card-header" id="headingTwo">
-                <button class="btn btn-link" data-toggle="collapse" data-target="#collapseTwo" aria-expanded="true" aria-controls="collapseTwo">
-                  Encrypt
-                </button>
-              </div>
-              <div id="collapseTwo" class="collapse" aria-labelledby="headingTwo" data-parent="#accordion">
-                <div class="card-body">
-                  <div class="form-group">
-                    <label for="popup-plaintext-encrypt"><b>Plaintext:</b></label>
-                    <input type="text" class="form-control" id="popup-plaintext-encrypt" placeholder="" >
-                  </div>
-                  <div class="form-group">
-                    <label for="popup-label-encrypt"><b>Label:</b></label>
-                    <input type="text" class="form-control" id="popup-label-encrypt" placeholder="" >
-                  </div>
-                  <div class="form-group">
-                    <label for="popup-encrypted-encrypt"><b>Encrypted:</b></label>
-                    <input type="text" class="form-control" id="popup-encrypted-encrypt" placeholder="" readonly>
-                  </div>
-                  <button type="button" class="btn btn-primary" id="encrypt-btn">Encrypt</button>
-                </div>
-              </div>
-            </div>
-            <div class="card">
-              <div class="card-header" id="headingThree">
-                <button class="btn btn-link" data-toggle="collapse" data-target="#collapseThree" aria-expanded="true" aria-controls="collapseThree">
-                  Decrypt
-                </button>
-              </div>
-              <div id="collapseThree" class="collapse" aria-labelledby="headingThree" data-parent="#accordion">
-                <div class="card-body">
-                  <div class="form-group">
-                    <label for="popup-encrypted-decrypt"><b>Encrypted:</b></label>
-                    <input type="text" class="form-control" id="popup-encrypted-decrypt" placeholder="" >
-                  </div>
-                  <div class="form-group">
-                    <label for="popup-label-decrypt"><b>Label:</b></label>
-                    <input type="text" class="form-control" id="popup-label-decrypt" placeholder="" >
-                  </div>
-                  <div class="form-group">
-                    <label for="popup-plaintext-decrypt"><b>Plaintext:</b></label>
-                    <input type="text" class="form-control" id="popup-plaintext-decrypt" placeholder="" readonly>
-                  </div>
-                  <button type="button" class="btn btn-primary" id="decrypt-btn">Decrypt</button>
-                </div>
-              </div>
-            </div>
-            <div class="card">
-              <div class="card-header" id="headingFour">
-                <button class="btn btn-link" data-toggle="collapse" data-target="#collapseFour" aria-expanded="true" aria-controls="collapseFour">
-                  Grant
-                </button>
-              </div>
-              <div id="collapseFour" class="collapse" aria-labelledby="headingFour" data-parent="#accordion">
-                <div class="card-body">
-                  <div class="form-group">
-                    <label for="popup-label-grant"><b>Label:</b></label>
-                    <input type="text" class="form-control" id="popup-label-grant" placeholder="" >
-                  </div>
-                  <div class="form-group">
-                    <label for="popup-bek-grant"><b>Bob's encrypting key:</b></label>
-                    <input type="text" class="form-control" id="popup-bek-grant" placeholder="" >
-                  </div>
-                  <div class="form-group">
-                    <label for="popup-bvk-grant"><b>Bob's verifying key:</b></label>
-                    <input type="text" class="form-control" id="popup-bvk-grant" placeholder="" >
-                  </div>
-                  <div class="form-group">
-                    <label for="popup-expiration-grant"><b>Grant expire:</b></label>
-                    <input type="text" class="form-control" id="popup-expiration-grant" placeholder="" >
-                  </div>
-                  <div class="row no-gutters">
-                    <div class="col">
-                      <button type="button" class="btn btn-primary" id="grant-btn">Grant</button>
-                    </div>
-                    <div class="col-auto">
-                      <button type="button" class="btn btn-outline-success" id="autofill-bob-grant-btn">Autofill Bob</button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div class="card">
-              <div class="card-header" id="headingFive">
-                <button class="btn btn-link" data-toggle="collapse" data-target="#collapseFive" aria-expanded="true" aria-controls="collapseFive">
-                  Revoke
-                </button>
-              </div>
-              <div id="collapseFive" class="collapse" aria-labelledby="headingFive" data-parent="#accordion">
-                <div class="card-body">
-                  <div class="form-group">
-                    <label for="popup-label-revoke"><b>Label:</b></label>
-                    <input type="text" class="form-control" id="popup-label-revoke" placeholder="" >
-                  </div>
-                  <div class="form-group">
-                    <label for="popup-bvk-revoke"><b>Bob's verifying key:</b></label>
-                    <input type="text" class="form-control" id="popup-bvk-revoke" placeholder="" >
-                  </div>
-                  <div class="row no-gutters">
-                    <div class="col">
-                      <button type="button" class="btn btn-primary" id="revoke-btn">Revoke</button>
-                    </div>
-                    <div class="col-auto">
-                      <button type="button" class="btn btn-outline-success" id="autofill-bob-revoke-btn">Autofill Bob</button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
+            <div class="col-md-10"></div>
           </div>
         </div>
 
         <ul class="list-group list-group-flush">
           <li class="list-group-item">
             &copy; Robin Thomas | <a href="https://github.com/robin-thomas/nubox-ext" target="_blank">Github</a>
-            &nbsp;| <a href="" target="_blank" id="popup-expand">Expand</a>
           </li>
         </ul>
       </div>
