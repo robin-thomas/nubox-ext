@@ -62,6 +62,7 @@ def parse_message(message_json):
     if is_host_running() == False:
         output = {}
         output["id"] = msg_id
+        output["cmd"] = "isHostRunning"
         output["type"] = "failure"
         output["result"] = "nuBox Host is not running"
 
@@ -71,6 +72,7 @@ def parse_message(message_json):
     if msg_cmd == "isHostRunning":
         output = {}
         output["id"] = msg_id
+        output["cmd"] = "isHostRunning"
         output["type"] = "success"
         output["result"] = "nuBox Host is running"
 
@@ -80,6 +82,7 @@ def parse_message(message_json):
     elif msg_cmd == "bob_keys":
         output = {}
         output["id"] = msg_id
+        output["cmd"] = "bob_keys"
 
         try:
             bob_encrypting_key, bob_verifying_key = Bob.get_keys()
@@ -100,6 +103,7 @@ def parse_message(message_json):
 
         output = {}
         output["id"] = msg_id
+        output["cmd"] = "encrypt"
 
         try:
             encrypted = Alice.encrypt(label, plaintext)
@@ -115,6 +119,7 @@ def parse_message(message_json):
     elif msg_cmd == 'grant':
         output = {}
         output["id"] = msg_id
+        output["cmd"] = "grant"
 
         response = Bob.grant(label=message['args'][0],
                              bob_encrypting_key=message['args'][1],
@@ -138,6 +143,7 @@ def parse_message(message_json):
 
         output = {}
         output["id"] = msg_id
+        output["cmd"] = "revoke"
 
         response = Alice.revoke(label, bvk)
         if response.status_code == 200:
@@ -157,16 +163,13 @@ def parse_message(message_json):
 
         output = {}
         output["id"] = msg_id
-
-        logging.error(label)
+        output["cmd"] = "decrypt"
 
         try:
-            response = Bob.decrypt(label, encrypted)
-            logging.error(response.content)
-            plaintext = json.loads(response.content)['result']['cleartexts'][0]
+            plaintext = Bob.decrypt(label, encrypted)
             output["type"] = "success"
             output["result"] = plaintext
-        except Exception as e:
+        except:
             output["type"] = "failure"
             output["result"] = "Failed to decrypt for this label"
 
