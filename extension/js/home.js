@@ -71,7 +71,7 @@ $(document).ready((e) => {
                   </tr>`;
       }
 
-      const table = `<div style="font-size:14px;height:calc(100vh - 250px)">
+      const table = `<div style="font-size:14px;height:calc(100vh - 275px)">
                       <table class="table table-striped table-bordered table-hover"
                              style="table-layout:fixed;word-wrap:break-word">
                         <thead class="thead-dark">
