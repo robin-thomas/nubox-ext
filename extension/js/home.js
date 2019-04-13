@@ -71,10 +71,10 @@ $(document).ready((e) => {
                   </tr>`;
       }
 
-      const table = `<div style="margin-top:15px;font-size:14px;height:calc(100vh - 250px);overflow-y:scroll">
-                      <table class="table table-dark table-striped table-hover"
+      const table = `<div style="font-size:14px;height:calc(100vh - 250px)">
+                      <table class="table table-striped table-hover"
                              style="table-layout:fixed;word-wrap:break-word">
-                        <thead>
+                        <thead class="thead-dark">
                           <tr>
                             <th scope="col">Request</th>
                             <th scope="col">Input</th>
@@ -88,6 +88,7 @@ $(document).ready((e) => {
                     </div>`;
 
       $('#nubox-content-content').html(table);
+      new SimpleBar($('#nubox-content-content')[0]);
 
     } catch (err) {
 
