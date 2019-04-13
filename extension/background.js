@@ -5,27 +5,27 @@ const port = chrome.runtime.connectNative('com.google.chrome.nubox');
 let ipfsEncrypts = {};
 
 const Logging = {
-  key: 'nuBox',
+  key: 'nuBox.logging',
 
   addLog: (cmd, type, message) => {
     return new Promise((resolve) => {
       const datetime = moment().format('YYYY-MM-DD HH:mm:ss');
 
-      Logging.getLogs().then((log) => {
-        log.push({
+      Logging.getLogs().then((logs) => {
+        logs.unshift({
           cmd: cmd,
           type: type,
           message: message,
           datetime: datetime,
         });
 
-        const key = Logging.key;
-        chrome.storage.sync.set({
-          key: log,
-        }, function() {
-          resolve(null);
+        chrome.storage.local.remove(Logging.key, () => {
+          chrome.storage.local.set({
+            'nuBox.logging': logs,
+          }, () => resolve(null));
         });
-      });
+
+      }).catch(console.log);
     });
   },
 
@@ -45,7 +45,7 @@ const Logging = {
 };
 
 const Approval = {
-  key: 'nuBox',
+  key: 'nuBox.approval',
 
   getAll: () => {
     const items = localStorage.getItem(Approval.key);
@@ -98,7 +98,7 @@ const Callbacks = {
 
       delete Callbacks.callbacks[msgId];
 
-      if (cmd !== 'isHostRunning') {
+      if (cmd !== 'isHostRunning' && cmd !== 'getLogs') {
         Logging.addLog(cmd, type, msg);
       }
     }
@@ -162,7 +162,6 @@ const Process = {
         Callbacks.sendResponse(msgId, 'failure', 'Host not approved', message.cmd);
         return;
       }
-      console.log('approved');
     }
 
     // Convert args to correct encoding.
@@ -175,6 +174,10 @@ const Process = {
 
     // Operations based on cmd.
     switch (message.cmd) {
+      case 'getLogs':
+        Process.getLogs(msgId);
+        break;
+
       case 'bob_keys':
         Process.getBobKeys(msgId);
         break;
@@ -207,6 +210,12 @@ const Process = {
         Process.readBlock(msgId, message.args);
         break;
     }
+  },
+
+  getLogs: (msgId) => {
+    Logging.getLogs().then((logs) => {
+      Callbacks.sendResponse(msgId, 'success', logs, 'getLogs');
+    });
   },
 
   getBobKeys: (msgId) => {

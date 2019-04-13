@@ -54,9 +54,7 @@ $(document).ready((e) => {
       $('#popup-bek').val('');
       $('#popup-bvk').val('');
 
-      const output = await callExtension('bob_keys', {
-        host: window.location.hostname,
-      });
+      const output = await callExtension('bob_keys');
 
       $('#popup-bek').val(output.bek);
       $('#popup-bvk').val(output.bvk);
@@ -75,7 +73,6 @@ $(document).ready((e) => {
       const output = await callExtension('encrypt', {
         plaintext: plaintext,
         label: label,
-        host: window.location.hostname,
       });
 
       $('#popup-encrypted-encrypt').val(output);
@@ -99,7 +96,6 @@ $(document).ready((e) => {
       const plaintext = await callExtension('decrypt', {
         encrypted: encrypted,
         label: label,
-        host: window.location.hostname,
       });
 
       $('#popup-plaintext-decrypt').val(atob(plaintext));
@@ -136,7 +132,6 @@ $(document).ready((e) => {
         bek: bek,
         bvk: bvk,
         expiration: expiration + ' 00:00:00',
-        host: window.location.hostname,
       });
 
     } catch (err) {
@@ -159,7 +154,6 @@ $(document).ready((e) => {
       await callExtension('revoke', {
         label: label,
         bvk: bvk,
-        host: window.location.hostname,
       });
 
     } catch (err) {
@@ -169,9 +163,7 @@ $(document).ready((e) => {
 
   autofillGrantButton.on('click', async () => {
     try {
-      const output = await callExtension('bob_keys', {
-        host: window.location.hostname,
-      });
+      const output = await callExtension('bob_keys');
       $('#popup-bek-grant').val(output.bek);
       $('#popup-bvk-grant').val(output.bvk);
 
@@ -182,9 +174,7 @@ $(document).ready((e) => {
 
   autofillRevokeButton.on('click', async () => {
     try {
-      const output = await callExtension('bob_keys', {
-        host: window.location.hostname,
-      });
+      const output = await callExtension('bob_keys');
       $('#popup-bvk-revoke').val(output.bvk);
 
     } catch (err) {
@@ -203,10 +193,13 @@ const callExtension = (cmd, args) => {
   return new Promise((resolve, reject) => {
     const msgId = Math.random().toString(36).substring(7);
 
+    args = (args === undefined || args === null) ? {} : args;
+    args.host = window.location.hostname;
+
     chrome.runtime.sendMessage({
       msgId: msgId,
       cmd: cmd,
-      args: args === undefined ? [] : args,
+      args: args,
     }, (response) => {
       console.log(response);
 
