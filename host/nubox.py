@@ -83,6 +83,7 @@ def parse_message(message_json):
         output = {}
         output["id"] = msg_id
         output["cmd"] = "bob_keys"
+        output["args"] = message['args']
 
         try:
             bob_encrypting_key, bob_verifying_key = Bob.get_keys()
@@ -98,12 +99,13 @@ def parse_message(message_json):
 
     # encrypt operation
     elif msg_cmd == 'encrypt':
-        plaintext = message['args'][0]
-        label = message['args'][1]
+        plaintext = message['args']['plaintext']
+        label = message['args']['label']
 
         output = {}
         output["id"] = msg_id
         output["cmd"] = "encrypt"
+        output["args"] = message['args']
 
         try:
             encrypted = Alice.encrypt(label, plaintext)
@@ -120,11 +122,12 @@ def parse_message(message_json):
         output = {}
         output["id"] = msg_id
         output["cmd"] = "grant"
+        output["args"] = message['args']
 
-        response = Bob.grant(label=message['args'][0],
-                             bob_encrypting_key=message['args'][1],
-                             bob_verifying_key=message['args'][2],
-                             expiration=message['args'][3])
+        response = Bob.grant(label=message['args']['label'],
+                             bob_encrypting_key=message['args']['bek'],
+                             bob_verifying_key=message['args']['bvk'],
+                             expiration=message['args']['expiration'])
 
         if response.status_code == 200:
             output["type"] = "success"
@@ -138,8 +141,9 @@ def parse_message(message_json):
 
     # revoke operation
     elif msg_cmd == 'revoke':
-        label = message['args'][0]
-        bvk = message['args'][1]
+        label = message['args']['label']
+        bvk = message['args']['bvk']
+        output["args"] = message['args']
 
         output = {}
         output["id"] = msg_id
@@ -158,8 +162,9 @@ def parse_message(message_json):
 
     # decrypt operation
     elif msg_cmd == 'decrypt':
-        encrypted = message['args'][0]
-        label = message['args'][1]
+        encrypted = message['args']['encrypted']
+        label = message['args']['label']
+        output["args"] = message['args']
 
         output = {}
         output["id"] = msg_id

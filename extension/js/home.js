@@ -54,26 +54,38 @@ $(document).ready((e) => {
           message = log.message;
         };
 
+        let args = log.args;
+        try {
+          args = JSON.stringify(args);
+        } catch (err) {
+          args = log.args;
+        };
+        args = args === undefined ? '-' : args;
+
         trows += `<tr>
                     <td>${log.cmd}</td>
+                    <td>${args}</td>
                     <td>${log.type.toUpperCase()}</td>
                     <td>${message}</td>
                     <td>${log.datetime}</td>
                   </tr>`;
       }
 
-      const table = `<table class="table table-dark table-striped table-hover"
-                            style="margin-top:15px;font-size:14px;table-layout:fixed;word-wrap:break-word">
-                      <thead>
-                        <tr>
-                          <th scope="col">Request</th>
-                          <th scope="col">Result</th>
-                          <th scope="col">Response</th>
-                          <th scope="col">Date</th>
-                        </tr>
-                      </thead>
-                      <tbody>${trows}</tbody>
-                    </table>`;
+      const table = `<div style="margin-top:15px;font-size:14px;height:calc(100vh - 250px);overflow-y:scroll">
+                      <table class="table table-dark table-striped table-hover"
+                             style="table-layout:fixed;word-wrap:break-word">
+                        <thead>
+                          <tr>
+                            <th scope="col">Request</th>
+                            <th scope="col">Input</th>
+                            <th scope="col">Result</th>
+                            <th scope="col">Response</th>
+                            <th scope="col">Date</th>
+                          </tr>
+                        </thead>
+                        <tbody>${trows}</tbody>
+                      </table>
+                    </div>`;
 
       $('#nubox-content-content').html(table);
 

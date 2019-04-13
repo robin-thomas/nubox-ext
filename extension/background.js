@@ -7,13 +7,22 @@ let ipfsEncrypts = {};
 const Logging = {
   key: 'nuBox.logging',
 
-  addLog: (cmd, type, message) => {
+  addLog: (cmd, type, message, args) => {
     return new Promise((resolve) => {
       const datetime = moment().format('YYYY-MM-DD HH:mm:ss');
+
+      // Decode it back for human-readable form.
+      if (args.label !== undefined) {
+        args.label = IpfsHttpClient.Buffer.from(args.label, 'hex').toString();
+      }
+      if (args.plaintext !== undefined) {
+        args.plaintext = IpfsHttpClient.Buffer.from(args.plaintext, 'base64').toString();
+      }
 
       Logging.getLogs().then((logs) => {
         logs.unshift({
           cmd: cmd,
+          args: args,
           type: type,
           message: message,
           datetime: datetime,
@@ -89,7 +98,7 @@ const Callbacks = {
     Callbacks.callbacks[id] = callback;
   },
 
-  sendResponse: (msgId, type, msg, cmd) => {
+  sendResponse: (msgId, type, msg, cmd, args) => {
     if (Callbacks.callbacks[msgId] !== undefined) {
       Callbacks.callbacks[msgId]({
         type: type,
@@ -99,7 +108,7 @@ const Callbacks = {
       delete Callbacks.callbacks[msgId];
 
       if (cmd !== 'isHostRunning' && cmd !== 'getLogs') {
-        Logging.addLog(cmd, type, msg);
+        Logging.addLog(cmd, type, msg, args);
       }
     }
   },
@@ -134,13 +143,13 @@ const Callbacks = {
         const content = IpfsHttpClient.Buffer.from(response.result);
 
         ipfs.add(content).then((results) => {
-          Callbacks.sendResponse(response.id, 'success', results[0].hash, response.cmd);
+          Callbacks.sendResponse(response.id, 'success', results[0].hash, response.cmd, response.args);
         }).catch((err) => {
-          Callbacks.sendResponse(response.id, 'failure', err.message, response.cmd);
+          Callbacks.sendResponse(response.id, 'failure', err.message, response.cmd, response.args);
         });
 
       } else {
-        Callbacks.sendResponse(response.id, response.type, response.result, response.cmd);
+        Callbacks.sendResponse(response.id, response.type, response.result, response.cmd, response.args);
       }
     }
   },
@@ -159,7 +168,7 @@ const Process = {
         message.cmd !== 'isHostRunning') {
       // Not approved.
       if (!Approval.isApproved(message.args.host)) {
-        Callbacks.sendResponse(msgId, 'failure', 'Host not approved', message.cmd);
+        Callbacks.sendResponse(msgId, 'failure', 'Host not approved', message.cmd, message.args);
         return;
       }
     }
@@ -175,7 +184,7 @@ const Process = {
     // Operations based on cmd.
     switch (message.cmd) {
       case 'getLogs':
-        Process.getLogs(msgId);
+        Process.getLogs(msgId, message.args);
         break;
 
       case 'bob_keys':
@@ -212,17 +221,21 @@ const Process = {
     }
   },
 
-  getLogs: (msgId) => {
-    Logging.getLogs().then((logs) => {
-      Callbacks.sendResponse(msgId, 'success', logs, 'getLogs');
-    });
+  getLogs: (msgId, args) => {
+    if (chrome.runtime.id !== args.host) {
+      Callbacks.sendResponse(msgId, 'failure', 'No access to use getLogs API', 'getLogs', args);
+    } else {
+      Logging.getLogs().then((logs) => {
+        Callbacks.sendResponse(msgId, 'success', logs, 'getLogs');
+      });
+    }
   },
 
   getBobKeys: (msgId) => {
     port.postMessage({
       id: msgId,
       cmd: 'bob_keys',
-      args: [] ,
+      args: {},
     });
   },
 
@@ -230,7 +243,7 @@ const Process = {
     port.postMessage({
       id: msgId,
       cmd: 'isHostRunning',
-      args: [] ,
+      args: {},
     });
   },
 
@@ -239,7 +252,7 @@ const Process = {
       'width=340,height=614,top=25,left=25,toolbar=no,location=no,scrollbars=no,resizable=no,status=no,menubar=no,directories=no');
 
     const popupConnectCloseHandler = () => {
-      Callbacks.sendResponse(msgId, 'failure', 'User has rejected the connect request', 'approve');
+      Callbacks.sendResponse(msgId, 'failure', 'User has rejected the connect request', 'approve', args);
     };
     popup.addEventListener('beforeunload', popupConnectCloseHandler);
 
@@ -250,7 +263,7 @@ const Process = {
 
       // If the user rejects it, send back the failure message.
       popup.$('#nubox-connect-cancel').on('click', () => {
-        Callbacks.sendResponse(msgId, 'failure', 'User has rejected the connect request', 'approve');
+        Callbacks.sendResponse(msgId, 'failure', 'User has rejected the connect request', 'approve', args);
         popup.close();
       });
       popup.$('#nubox-connect-confirm').on('click', () => {
@@ -259,7 +272,7 @@ const Process = {
 
         // User has approved the host.
         Approval.approve(args.host);
-        Callbacks.sendResponse(msgId, 'success', 'Host is approved', 'approve');
+        Callbacks.sendResponse(msgId, 'success', 'Host is approved', 'approve', args);
 
         popup.close();
       });
@@ -274,7 +287,7 @@ const Process = {
     port.postMessage({
       id: msgId,
       cmd: 'encrypt',
-      args: [ args.plaintext, args.label ] ,
+      args: args,
     });
   },
 
@@ -289,7 +302,10 @@ const Process = {
         port.postMessage({
           id: msgId,
           cmd: 'decrypt',
-          args: [ encrypted, args.label ],
+          args: {
+            encrypted: encrypted,
+            label: args.label
+          },
         });
       });
     }
@@ -297,18 +313,18 @@ const Process = {
     port.postMessage({
       id: msgId,
       cmd: 'decrypt',
-      args: [ args.encrypted, args.label ],
+      args: args,
     });
   },
 
   grant: (msgId, args, sender) => {
     // Validate user input.
     if (!(moment(args.expiration, 'YYYY-MM-DD HH:mm:ss', true).isValid())) {
-      Callbacks.sendResponse(msgId, 'failure', 'Invalid expiration date string (not ISO 8601)', 'grant');
+      Callbacks.sendResponse(msgId, 'failure', 'Invalid expiration date string (not ISO 8601)', 'grant', args);
       return;
     }
     if (moment().isAfter(args.expiration)) {
-      Callbacks.sendResponse(msgId, 'failure', 'Expiration date string is in the past or today', 'grant');
+      Callbacks.sendResponse(msgId, 'failure', 'Expiration date string is in the past or today', 'grant', args);
       return;
     }
     args.expiration = moment(args[3]).format('YYYY-MM-DDTHH:mm:ss') + '.445418Z';
@@ -318,7 +334,7 @@ const Process = {
       port.postMessage({
         id: msgId,
         cmd: 'grant',
-        args: [ args.label, args.bek, args.bvk, args.expiration ],
+        args: args,
       });
 
       return;
@@ -329,7 +345,7 @@ const Process = {
       'width=340,height=725,top=25,left=25,toolbar=no,location=no,scrollbars=no,resizable=no,status=no,menubar=no,directories=no');
 
     const popupGrantCloseHandler = (e) => {
-      Callbacks.sendResponse(msgId, 'failure', 'User has rejected the grant request', 'grant');
+      Callbacks.sendResponse(msgId, 'failure', 'User has rejected the grant request', 'grant', args);
     };
     popup.addEventListener('beforeunload', popupGrantCloseHandler);
 
@@ -342,7 +358,7 @@ const Process = {
 
       // If the user rejects it, send back the failure message.
       popup.$('#nubox-grant-cancel').on('click', (e) => {
-        Callbacks.sendResponse(msgId, 'failure', 'User has rejected the grant request', 'grant');
+        Callbacks.sendResponse(msgId, 'failure', 'User has rejected the grant request', 'grant', args);
         popup.close();
       });
       popup.$('#nubox-grant-confirm').on('click', () => {
@@ -353,7 +369,7 @@ const Process = {
         port.postMessage({
           id: msgId,
           cmd: 'grant',
-          args: [ args.label, args.bek, args.bvk, args.expiration ],
+          args: args,
         });
 
         popup.close();
@@ -367,7 +383,7 @@ const Process = {
       'width=315,height=555,top=25,left=25,toolbar=no,location=no,scrollbars=no,resizable=no,status=no,menubar=no,directories=no');
 
     const popupRevokeCloseHandler = (e) => {
-      Callbacks.sendResponse(msgId, 'failure', 'User has rejected the revoke request', 'revoke');
+      Callbacks.sendResponse(msgId, 'failure', 'User has rejected the revoke request', 'revoke', args);
     };
     popup.addEventListener('beforeunload', popupRevokeCloseHandler);
 
@@ -378,7 +394,7 @@ const Process = {
 
       // If the user rejects it, send back the failure message.
       popup.$('#nubox-grant-cancel').on('click', (e) => {
-        Callbacks.sendResponse(msgId, 'failure', 'User has rejected the revoke request', 'revoke');
+        Callbacks.sendResponse(msgId, 'failure', 'User has rejected the revoke request', 'revoke', args);
         popup.close();
       });
       popup.$('#nubox-grant-confirm').on('click', (e) => {
@@ -389,7 +405,7 @@ const Process = {
         port.postMessage({
           id: msgId,
           cmd: 'revoke',
-          args: [ args.label, args.bvk ],
+          args: args,
         });
 
         popup.close();
@@ -416,7 +432,10 @@ const Process = {
           port.postMessage({
             id: msgId,
             cmd: 'encrypt',
-            args: [ blockB64, args.label ],
+            args: {
+              plaintext: blockB64,
+              label: args.label
+            },
           });
         };
 
