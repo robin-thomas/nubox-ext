@@ -87,6 +87,7 @@ const nuBox = {
         bvk: bob_verifying_key,
         expiration: expiration,
         noPopup: noPopup,
+        host: window.location.hostname,
       });
     } catch (err) {
       throw err;
@@ -105,6 +106,7 @@ const nuBox = {
       await nuBoxCallback.callExtension('revoke', {
         label: label,
         bvk: bvk,
+        host: window.location.hostname,
       });
     } catch (err) {
       throw err;
@@ -124,6 +126,7 @@ const nuBox = {
         plaintext: plaintext,
         label: label,
         ipfs: ipfs,
+        host: window.location.hostname,
       });
     } catch (err) {
       throw err;
@@ -143,6 +146,7 @@ const nuBox = {
         encrypted: encrypted,
         label: label,
         ipfs: ipfs,
+        host: window.location.hostname,
       });
     } catch (err) {
       throw err;
@@ -155,7 +159,8 @@ const nuBox = {
       return await nuBoxCallback.callExtension('readBlock', {
         blob: blob,
         path: path,
-        ipfs: ipfs
+        ipfs: ipfs,
+        host: window.location.hostname,
       });
     } catch (err) {
       throw err;
@@ -164,7 +169,9 @@ const nuBox = {
 
   getBobKeys: async () => {
     try {
-      return await nuBoxCallback.callExtension('bob_keys');
+      return await nuBoxCallback.callExtension('bob_keys', {
+        host: window.location.hostname,
+      });
     } catch (err) {
       throw err;
     }
