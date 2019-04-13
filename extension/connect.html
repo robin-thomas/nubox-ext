@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+  <html>
+    <head>
+      <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css">
+      <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.3/css/all.css">
+      <title>nuBox connect request</title>
+      <style>
+        .dot {height:70px;width:70px;border-radius:50%;display:inline-block}
+        .host-dot {background-color:#6c757d;font-size:25px;text-align:center;line-height:65px;color:white}
+        .nuBox-dot {background-color:#bd2130}
+        .host-tick {position:absolute;top:17px;color:green;font-size:25px;background:white;left:25%;}
+      </style>
+    </head>
+    <body>
+      <div class="card" style="height:100%;border:0 !important">
+        <div class="card-header">
+          <img class="card-img-top" src="icons/logo_128x128.png" style="width:32px;height:32px" />
+          <span>nuBox</span>
+        </div>
+        <div class="card-body">
+          <p class="card-text" style="text-align:center"><b>Connect Request</b></p>
+          <div class="row no-gutters" style="padding:15px 40px">
+            <div class="col">
+              <div class="row"><div class="col"><span class="dot host-dot title-letter"></span></div></div>
+              <div class="row"><div class="col" style="text-align:center;margin-top:7px;"><span id="connect-host" style="font-size:12px"></span></div></div>
+            </div>
+            <div class="col">
+              <div class="host-tick"><i class="fas fa-check-circle"></i></div>
+              <div style="height:1px;width:100%;border-top:3px dashed grey;margin:35px auto"></div>
+            </div>
+            <div class="col">
+              <div class="row"><div class="col"><span class="dot nuBox-dot"></span></div></div>
+              <div class="row"><div class="col" style="text-align:center"><span style="font-size:12px">nuBox</span></div></div>
+            </div>
+          </div>
+          <p class="card-text" style="font-size:20px;font-weight:bold;text-align:center"><span id="host-title"></span> would like to connect to your account</p>
+          <p class="card-text" style="font-size:13px;text-align:center;font-style:italic">This site is requesting access to your nuBox account. Always make sure you trust the sites you interact with.</p>
+          <br /><br />
+          <button type="button" class="btn btn-danger" id="nubox-connect-cancel">Cancel</button>
+          <button type="button" class="btn btn-primary" id="nubox-connect-confirm">Approve</button>
+        </div>
+        <ul class="list-group list-group-flush">
+          <li class="list-group-item">&copy; Robin Thomas | <a href="https://github.com/robin-thomas/nubox-ext" target="_blank">Github</a></li>
+        </ul>
+      </div>
+    </body>
+    <script type="text/javascript" src="jquery-3.3.1.slim.min.js"></script>
+  </html>

@@ -174,6 +174,7 @@ const nuBox = {
     try {
       return await nuBoxCallback.callExtension('approve', {
         host: window.location.hostname,
+        title: document.title,
       });
     } catch (err) {
       throw err;

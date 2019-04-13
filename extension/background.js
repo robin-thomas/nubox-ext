@@ -9,7 +9,7 @@ const Approval = {
 
   getAll: () => {
     const items = localStorage.getItem(Approval.key);
-    return (items === null || items === undefined) ? [] : items;
+    return (items === null || items === undefined) ? [] : JSON.parse(items);
   },
 
   isApproved: (value) => {
@@ -105,7 +105,8 @@ const Process = {
     Callbacks.registerCallback(msgId, sendResponse);
 
     // Check whether host is approved. If not, fail the request.
-    if (message.cmd !== 'approve') {
+    if (message.cmd !== 'approve' &&
+        message.cmd !== 'isHostRunning') {
       // Not approved.
       if (!Approval.isApproved(message.args.host)) {
         Callbacks.sendResponse(msgId, 'failure', 'Host not approved');
@@ -123,6 +124,10 @@ const Process = {
 
     // Operations based on cmd.
     switch (message.cmd) {
+      case 'isHostRunning':
+        Process.isHostRunning(msgId);
+        break;
+
       case 'approve':
         Process.approve(msgId, message.args);
         break;
@@ -149,9 +154,44 @@ const Process = {
     }
   },
 
+  isHostRunning: (msgId) => {
+    port.postMessage({
+      id: msgId,
+      cmd: 'isHostRunning',
+      args: [] ,
+    });
+  },
+
   approve: (msgId, args) => {
-    Approval.approve(args.host);
-    Callbacks.sendResponse(msgId, 'success', 'Host is approved');
+    const popup = window.open('connect.html', 'extension_popup',
+      'width=340,height=614,top=25,left=25,toolbar=no,location=no,scrollbars=no,resizable=no,status=no,menubar=no,directories=no');
+
+    const popupConnectCloseHandler = () => {
+      Callbacks.sendResponse(msgId, 'failure', 'User has rejected the connect request');
+    };
+    popup.addEventListener('beforeunload', popupConnectCloseHandler);
+
+    popup.addEventListener('load', () => {
+      popup.$('#host-title').html(args.title);
+      popup.$('.title-letter').html(args.title[0].toUpperCase());
+      popup.$('#connect-host').html(args.host);
+
+      // If the user rejects it, send back the failure message.
+      popup.$('#nubox-connect-cancel').on('click', () => {
+        Callbacks.sendResponse(msgId, 'failure', 'User has rejected the connect request');
+        popup.close();
+      });
+      popup.$('#nubox-connect-confirm').on('click', () => {
+        // Cancel the popup event handler.
+        popup.removeEventListener('beforeunload', popupConnectCloseHandler, false);
+
+        // User has approved the host.
+        Approval.approve(args.host);
+        Callbacks.sendResponse(msgId, 'success', 'Host is approved');
+
+        popup.close();
+      });
+    }, false);
   },
 
   encrypt: (msgId, args) => {
