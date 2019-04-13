@@ -71,9 +71,8 @@ $(document).ready((e) => {
                   </tr>`;
       }
 
-      const table = `<div style="font-size:14px;height:calc(100vh - 275px)">
-                      <table class="table table-striped table-bordered table-hover"
-                             style="table-layout:fixed;word-wrap:break-word">
+      const table = `<div style="font-size:14px">
+                      <table class="table" style="table-layout:fixed;word-wrap:break-word">
                         <thead class="thead-dark">
                           <tr>
                             <th scope="col">Request</th>
@@ -83,12 +82,18 @@ $(document).ready((e) => {
                             <th scope="col">Date</th>
                           </tr>
                         </thead>
+                      </table>
+                    </div>
+                    <div style="font-size:14px;height:calc(100vh - 275px)">
+                      <table class="table table-striped table-bordered table-hover"
+                             style="table-layout:fixed;word-wrap:break-word">
                         <tbody>${trows}</tbody>
                       </table>
                     </div>`;
 
       $('#nubox-content-content').html(table);
-      new SimpleBar($('#nubox-content-content')[0]);
+      console.log($('#nubox-content-content > div'));
+      new SimpleBar($('#nubox-content-content > div').last()[0]);
 
     } catch (err) {
 
