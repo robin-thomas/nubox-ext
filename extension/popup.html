@@ -10,11 +10,12 @@
         .offline-dot {background-color:#dc3545}
         .online {color:#28a745}
         .offline {color:#dc3545}
-        .offline,.online {margin-top:5px;font-size:14px;float:right;text-align:right;visibility:hidden;position:absolute;right:15px}
+        .offline,.online {margin-top:5px;font-size:14px;float:right;text-align:right;visibility:hidden;position:absolute;right:60px}
         ::-webkit-scrollbar {display:none}
         #accordion {height:375px;overflow-y:scroll}
         #accordion .card-header {padding:10px 0;background:#6c757d;border-radius:6px 6px 0 0}
         #accordion .btn-link {color:#fff}
+        #popup-expand {color:#6c757d;position:absolute;right:10px;top:5px;font-size:30px}
       </style>
     </head>
     <body>
@@ -24,6 +25,9 @@
           <span>nuBox</span>
           <span class="online"><span class="dot online-dot"></span>&nbsp;Online</span>
           <span class="offline"><span class="dot offline-dot"></span>&nbsp;Offline</span>
+          <a href="" target="_blank" id="popup-expand" title="Expand view">
+            <i class="fas fa-expand-arrows-alt"></i>
+          </a>
         </div>
         <div class="card-body">
           <p class="card-text">This extension can get NuCypher working on the browser side! Yay!</p>
@@ -165,7 +169,6 @@
         <ul class="list-group list-group-flush">
           <li class="list-group-item">
             &copy; Robin Thomas | <a href="https://github.com/robin-thomas/nubox-ext" target="_blank">Github</a>
-            &nbsp;| <a href="" target="_blank" id="popup-expand">Expand</a>
           </li>
         </ul>
       </div>
