@@ -4,6 +4,46 @@ const port = chrome.runtime.connectNative('com.google.chrome.nubox');
 // (for uploads to ipfs).
 let ipfsEncrypts = {};
 
+const Logging = {
+  key: 'nuBox',
+
+  addLog: (cmd, type, message) => {
+    return new Promise((resolve) => {
+      const datetime = moment().format('YYYY-MM-DD HH:mm:ss');
+
+      Logging.getLogs().then((log) => {
+        log.push({
+          cmd: cmd,
+          type: type,
+          message: message,
+          datetime: datetime,
+        });
+
+        const key = Logging.key;
+        chrome.storage.sync.set({
+          key: log,
+        }, function() {
+          resolve(null);
+        });
+      });
+    });
+  },
+
+  getLogs: () => {
+    return new Promise((resolve) => {
+      chrome.storage.local.get(Logging.key, function(results) {
+        // Not stored in Chrome. Send empty array.
+        if (chrome.runtime.lastError ||
+            results[Logging.key] === undefined) {
+          resolve([]);
+        } else {
+          resolve(results[Logging.key]);
+        }
+      });
+    });
+  }
+};
+
 const Approval = {
   key: 'nuBox',
 
@@ -43,7 +83,7 @@ const Callbacks = {
     Callbacks.callbacks[id] = callback;
   },
 
-  sendResponse: (msgId, type, msg) => {
+  sendResponse: (msgId, type, msg, cmd) => {
     if (Callbacks.callbacks[msgId] !== undefined) {
       Callbacks.callbacks[msgId]({
         type: type,
@@ -51,6 +91,10 @@ const Callbacks = {
       });
 
       delete Callbacks.callbacks[msgId];
+
+      if (cmd !== 'isHostRunning') {
+        Logging.addLog(cmd, type, msg);
+      }
     }
   },
 
@@ -84,17 +128,17 @@ const Callbacks = {
         const content = IpfsHttpClient.Buffer.from(response.result);
 
         ipfs.add(content).then((results) => {
-          Callbacks.sendResponse(response.id, 'success', results[0].hash);
+          Callbacks.sendResponse(response.id, 'success', results[0].hash, response.cmd);
         }).catch((err) => {
-          Callbacks.sendResponse(response.id, 'failure', err.message);
+          Callbacks.sendResponse(response.id, 'failure', err.message, response.cmd);
         });
 
       } else {
-        Callbacks.sendResponse(response.id, response.type, response.result);
+        Callbacks.sendResponse(response.id, response.type, response.result, response.cmd);
       }
     }
   },
-}
+};
 
 const Process = {
   main: (message, sender, sendResponse) => {
@@ -102,14 +146,14 @@ const Process = {
 
     // Register the callback for the response from the host.
     const msgId = message.msgId;
-    Callbacks.registerCallback(msgId, sendResponse);
+    Callbacks.registerCallback(msgId, sendResponse, message.cmd);
 
     // Check whether host is approved. If not, fail the request.
     if (message.cmd !== 'approve' &&
         message.cmd !== 'isHostRunning') {
       // Not approved.
       if (!Approval.isApproved(message.args.host)) {
-        Callbacks.sendResponse(msgId, 'failure', 'Host not approved');
+        Callbacks.sendResponse(msgId, 'failure', 'Host not approved', message.cmd);
         return;
       }
     }
@@ -167,7 +211,7 @@ const Process = {
       'width=340,height=614,top=25,left=25,toolbar=no,location=no,scrollbars=no,resizable=no,status=no,menubar=no,directories=no');
 
     const popupConnectCloseHandler = () => {
-      Callbacks.sendResponse(msgId, 'failure', 'User has rejected the connect request');
+      Callbacks.sendResponse(msgId, 'failure', 'User has rejected the connect request', 'approve');
     };
     popup.addEventListener('beforeunload', popupConnectCloseHandler);
 
@@ -178,7 +222,7 @@ const Process = {
 
       // If the user rejects it, send back the failure message.
       popup.$('#nubox-connect-cancel').on('click', () => {
-        Callbacks.sendResponse(msgId, 'failure', 'User has rejected the connect request');
+        Callbacks.sendResponse(msgId, 'failure', 'User has rejected the connect request', 'approve');
         popup.close();
       });
       popup.$('#nubox-connect-confirm').on('click', () => {
@@ -187,7 +231,7 @@ const Process = {
 
         // User has approved the host.
         Approval.approve(args.host);
-        Callbacks.sendResponse(msgId, 'success', 'Host is approved');
+        Callbacks.sendResponse(msgId, 'success', 'Host is approved', 'approve');
 
         popup.close();
       });
@@ -232,11 +276,11 @@ const Process = {
   grant: (msgId, args, sender) => {
     // Validate user input.
     if (!(moment(args.expiration, 'YYYY-MM-DD HH:mm:ss', true).isValid())) {
-      Callbacks.sendResponse(msgId, 'failure', 'Invalid expiration date string (not ISO 8601)');
+      Callbacks.sendResponse(msgId, 'failure', 'Invalid expiration date string (not ISO 8601)', 'grant');
       return;
     }
     if (moment().isAfter(args.expiration)) {
-      Callbacks.sendResponse(msgId, 'failure', 'Expiration date string is in the past or today');
+      Callbacks.sendResponse(msgId, 'failure', 'Expiration date string is in the past or today', 'grant');
       return;
     }
     args.expiration = moment(args[3]).format('YYYY-MM-DDTHH:mm:ss') + '.445418Z';
@@ -257,7 +301,7 @@ const Process = {
       'width=340,height=725,top=25,left=25,toolbar=no,location=no,scrollbars=no,resizable=no,status=no,menubar=no,directories=no');
 
     const popupGrantCloseHandler = (e) => {
-      Callbacks.sendResponse(msgId, 'failure', 'User has rejected the grant request');
+      Callbacks.sendResponse(msgId, 'failure', 'User has rejected the grant request', 'grant');
     };
     popup.addEventListener('beforeunload', popupGrantCloseHandler);
 
@@ -270,7 +314,7 @@ const Process = {
 
       // If the user rejects it, send back the failure message.
       popup.$('#nubox-grant-cancel').on('click', (e) => {
-        Callbacks.sendResponse(msgId, 'failure', 'User has rejected the grant request');
+        Callbacks.sendResponse(msgId, 'failure', 'User has rejected the grant request', 'grant');
         popup.close();
       });
       popup.$('#nubox-grant-confirm').on('click', () => {
@@ -295,7 +339,7 @@ const Process = {
       'width=315,height=555,top=25,left=25,toolbar=no,location=no,scrollbars=no,resizable=no,status=no,menubar=no,directories=no');
 
     const popupRevokeCloseHandler = (e) => {
-      Callbacks.sendResponse(msgId, 'failure', 'User has rejected the revoke request');
+      Callbacks.sendResponse(msgId, 'failure', 'User has rejected the revoke request', 'revoke');
     };
     popup.addEventListener('beforeunload', popupRevokeCloseHandler);
 
@@ -306,7 +350,7 @@ const Process = {
 
       // If the user rejects it, send back the failure message.
       popup.$('#nubox-grant-cancel').on('click', (e) => {
-        Callbacks.sendResponse(msgId, 'failure', 'User has rejected the revoke request');
+        Callbacks.sendResponse(msgId, 'failure', 'User has rejected the revoke request', 'revoke');
         popup.close();
       });
       popup.$('#nubox-grant-confirm').on('click', (e) => {

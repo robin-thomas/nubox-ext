@@ -5,7 +5,12 @@
   "version": "1.0",
   "author": "Robin Thomas",
   "background": {
-    "scripts": ["ipfs-http-client.min.js", "moment.min.js", "background.js", "StreamSaver.js"],
+    "scripts": [
+      "background.js",
+      "js/ipfs-http-client.min.js",
+      "js/moment.min.js",
+      "js/StreamSaver.js"
+    ],
     "persistant": true
   },
   "externally_connectable": {
@@ -21,12 +26,14 @@
     "*://*/*",
     "activeTab",
     "webRequest",
-    "webRequestBlocking"
+    "webRequestBlocking",
+    "storage"
   ],
   "icons": {
     "128": "icons/logo_128x128.png"
   },
-  "page_action": {
+  "browser_action": {
+    "default_title": "nuBox",
     "default_popup": "popup.html",
     "default_icon": {
       "128": "icons/logo_128x128.png"
