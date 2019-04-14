@@ -25,6 +25,15 @@ $(document).ready((e) => {
 
     const ele = $(e.currentTarget);
     if (!ele.hasClass('nav-link-active')) {
+      // Check whether a download is already happening.
+      if ($('.account-dashboard .nav-link-active .dashboard-title').html().toUpperCase() === 'DOWNLOAD FILE' &&
+          $('.download-file-card #download-file').val().trim().length > 0) {
+        if (!confirm('Pending download going on. Are you sure you want to cancel it?')) {
+          return;
+        }
+      }
+
+      // Change the title.
       const title = ele.find('.dashboard-title').html();
       $('#nubox-content-title').html(title);
       $('#nubox-content-content').html('');
@@ -79,26 +88,23 @@ $(document).ready((e) => {
   $('#nubox-content-content').on('change', '#download-file', async function(e) {
     const file = e.target.files[0];
 
-    // Reset.
-    $(this).val('');
-
     // Validate that the file name matches "nuBox.json"
-    if (file.name !== 'nuBox.json') {
-      const err = `<li class="list-group-item">
-                    Is this <b>really</b> the "nuBox.json" file shared with you?
-                  </li>`;
-      $('#nubox-content-content .download-file-card > .list-group-flush').html(err);
+    try {
+      nuBoxFile.validateFilename(file);
+    } catch (error) {
+      $(this).val('');
       return;
     }
-
-    $('#nubox-content-content .download-status').html('<p>Uploading</p>').css('visibility', 'visible');
-    $('#nubox-content-content .download-spinner').css('visibility', 'visible');
 
     // Upload and parse the file.
     let fileContents = null;
     try {
+      $('#nubox-content-content .download-status').html('<p>Uploading</p>').css('visibility', 'visible');
+      $('#nubox-content-content .download-spinner').css('visibility', 'visible');
+
       fileContents = await nuBoxFile.readnuBoxFile(file);
     } catch (error) {
+      $(this).val('');
       return;
     }
 
@@ -106,12 +112,26 @@ $(document).ready((e) => {
     try {
       await nuBoxFile.ipfsDownload(fileContents);
     } catch (error) {
+      $(this).val('');
       return;
     }
 
   });
 
   const nuBoxFile = {
+    validateFilename: (file) => {
+      // Validate that the file name matches "nuBox.json"
+      if (file.name !== 'nuBox.json') {
+        const err = `<li class="list-group-item">
+                      Is this <b>really</b> the "nuBox.json" file shared with you?
+                    </li>`;
+        $('#nubox-content-content .download-file-card > .list-group-flush').html(err);
+        $(this).val('');
+
+        throw new Error('invalid filename');
+      }
+    },
+
     readnuBoxFile: (file) => {
       return new Promise((resolve, reject) => {
         const reader = new FileReader();
