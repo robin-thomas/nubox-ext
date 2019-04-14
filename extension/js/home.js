@@ -231,19 +231,26 @@ $(document).ready((e) => {
   const showLogs = async () => {
     try {
       const logs = await callExtension('getLogs');
-      console.log(logs);
 
       let trows = '';
       for (const log of logs) {
         let message = log.message;
         try {
           message = JSON.stringify(message);
+          message = message.replace (/(^")|("$)/g, '');
         } catch (err) {
           message = log.message;
         };
 
         let args = log.args;
         try {
+          for (arg of Object.keys(args)) {
+            if (args[arg].length > 100) {
+              const val = args[arg];
+              args[arg] = val.substr(0, 50) + '...' + val.substr(val.length - 50);
+            }
+          }
+
           args = JSON.stringify(args);
         } catch (err) {
           args = log.args;
@@ -253,7 +260,7 @@ $(document).ready((e) => {
         trows += `<tr>
                     <td>${log.cmd}</td>
                     <td>${args}</td>
-                    <td>${log.type.toUpperCase()}</td>
+                    <td>${log.type.toUpperCase() === 'FAILURE' ? '<span style="color:#dc3545">FAILURE</span>' : '<span style="color:#28a745">SUCCESS</span>'}</td>
                     <td>${message}</td>
                     <td>${log.datetime}</td>
                   </tr>`;
