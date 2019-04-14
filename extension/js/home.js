@@ -350,12 +350,78 @@ $(document).ready((e) => {
       }
     },
 
-    renameFile: (filename) => {
-      // TODO.
+    renameFile: (e) => {
+      try {
+        e.preventDefault();
+
+        let ele = $(e.target);
+        while (!ele.hasClass('list-group-item')) {
+          ele = ele.parent();
+        }
+
+        const key = ele.parent().find('.fs-file-key').val();
+        const filename = IpfsHttpClient.Buffer.from(key, 'hex').toString();
+
+        let files = await ChromeStorage.get();
+        const file = files.filter(e => e.name === filename);
+        files = files.filter(e => e.name !== filename);
+
+        let newFileName = null;
+        while (true) {
+          newFileName = prompt('Rename: ', filename);
+
+          // User hit the cancel button.
+          if (newFileName === null) {
+            return null;
+          }
+
+          // Make sure that the filename matches the name syntax.
+          if (newFileName.trim().length < 1 ||
+              !/^[_a-zA-Z][_a-zA-Z0-9.]*$/.test(newFileName)) {
+            continue;
+          }
+
+          // check that this name hasn't been taken in this level.
+          if (files.filter(e => e.name === newFileName).length > 0) {
+            continue;
+          }
+
+          break;
+        }
+
+        files.push({
+          name: newFileName,
+          size: file.size,
+          type: file.type,
+          ipfs: ipfs,
+        });
+
+        await ChromeStorage.set(files);
+
+      } catch (err) {
+        throw err;
+      }
     },
 
-    deleteFile: (filename) => {
-      // TODO.
+    deleteFile: (e) => {
+      try {
+        e.preventDefault();
+
+        let ele = $(e.target);
+        while (!ele.hasClass('list-group-item')) {
+          ele = ele.parent();
+        }
+
+        const key = ele.parent().find('.fs-file-key').val();
+        const filename = IpfsHttpClient.Buffer.from(key, 'hex').toString();
+
+        let files = await ChromeStorage.get();
+        files = files.filter(e => e.name !== filename);
+        await ChromeStorage.set(files);
+
+      } catch (err) {
+        throw err;
+      }
     },
 
     drawFile: (file) => {
@@ -526,6 +592,8 @@ $(document).ready((e) => {
     },
   };
 
+  $(document).on('click', '.popover .fs-delete', FS.deleteFile);
+  $(document).on('click', '.popover .fs-rename', FS.renameFile);
   $('#nubox-content-content').on('contextmenu', '.fs-file-icon', (e) => {
     e.preventDefault();
 
