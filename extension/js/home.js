@@ -86,7 +86,7 @@ $(document).ready((e) => {
                           <div class="card-header">
                             <h6>My nuBox</h6>
                           </div>
-                          <div class="card-body" id="nubox-fs"></div>
+                          <div class="card-body" id="nubox-fs" style="margin-top:25px"></div>
                         </div>`;
 
       $('#nubox-content-content').html(uploadDiv);
@@ -244,9 +244,18 @@ $(document).ready((e) => {
     $('#download-file-fake').prop('disabled', false);
   });
   $('#nubox-content-content').on('change', '#upload-file', async function(e) {
-    const file = e.target.files[0];
+    let file = e.target.files[0];
 
-    // TODO: check whether this name is already used for a file.
+    // check whether this name is already used for a file.
+    let files = await ChromeStorage.get();
+
+    let filename = file.name;
+    while (files.filter(e => e.name === filename).length > 0) {
+      const name = filename.substring(0, filename.lastIndexOf('.'));
+      const ext = filename.substring(filename.lastIndexOf('.') + 1);
+      filename = name + '_1.' + ext;
+    }
+    file = new File([file], filename, { type: file.type });
 
     $('#upload-file-fake').prop('disabled', true);
     $('#nubox-content-content .upload-status').html('<p>Uploading</p>').css('visibility', 'visible');
@@ -262,7 +271,7 @@ $(document).ready((e) => {
 
         const hash = await callExtension('readBlock', {
           blob: blobURL,
-          label: file.name,
+          label: filename,
           ipfs: true,
         });
         hashes.push(hash);
@@ -363,7 +372,7 @@ $(document).ready((e) => {
           bvk: bob.bvk,
           expiration: '3017-01-01 00:00:00',
           noPopup: true,
-        })
+        });
 
         // Update the UI.
         FS.drawFile(file);
@@ -553,8 +562,7 @@ $(document).ready((e) => {
         }
       });
 
-      // const el = new SimpleBar(fsEle[0]);
-      // el.recalculate();
+      new SimpleBar(fsEle[0]);
     },
 
     constructShareFileUI: async (e) => {
