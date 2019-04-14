@@ -143,11 +143,11 @@ def parse_message(message_json):
     elif msg_cmd == 'revoke':
         label = message['args']['label']
         bvk = message['args']['bvk']
-        output["args"] = message['args']
 
         output = {}
         output["id"] = msg_id
         output["cmd"] = "revoke"
+        output["args"] = message['args']
 
         response = Alice.revoke(label, bvk)
         if response.status_code == 200:
@@ -164,11 +164,11 @@ def parse_message(message_json):
     elif msg_cmd == 'decrypt':
         encrypted = message['args']['encrypted']
         label = message['args']['label']
-        output["args"] = message['args']
 
         output = {}
         output["id"] = msg_id
         output["cmd"] = "decrypt"
+        output["args"] = message['args']
 
         try:
             plaintext = Bob.decrypt(label, encrypted)

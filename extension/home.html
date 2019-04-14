@@ -20,7 +20,10 @@
         .nav-link {color:black;transition:all 0.3s;height:50px;line-height:35px;font-weight:800}
         .nav-link-active,.nav-link-active:hover {background:#FFBCC3;color:#dc3545;border-radius:0 50px 50px 0;font-weight:800}
         .nav-link:not(.nav-link-active):hover {background:#E2E2E2;border-radius:0 50px 50px 0;color:black}
-        #nubox-content-title {font-size:27px;text-transform:uppercase;}
+        #nubox-content-title {font-size:27px;text-transform:uppercase;color:#6c757d;margin-bottom:20px}
+        #nubox-content-content {color:#6c757d}
+        .download-status > p {text-align:right;margin-top:9px;font-size:12px;}
+        .download-file-card > .list-group-flush > .list-group-item {font-size:12px;color:#dc3545;background:rgba(0,0,0,.03)}
       </style>
     </head>
     <body>
@@ -41,6 +44,14 @@
                       <div class="row no-gutters">
                         <div class="col-md-3"><i class="fas fa-tv"></i></div>
                         <div class="col-md-9 dashboard-title">My nuBox</div>
+                      </div>
+                    </a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="#">
+                      <div class="row no-gutters">
+                        <div class="col-md-3"><i class="fas fa-file-download"></i></div>
+                        <div class="col-md-9 dashboard-title">Download File</div>
                       </div>
                     </a>
                   </li>
@@ -80,7 +91,8 @@
     </body>
     <script type="text/javascript" src="js/jquery.min.js"></script>
     <script type="text/javascript" src="js/bootstrap.min.js"></script>
-    <script type="text/javascript" src="js/jquery-ui.min.js"></script>
     <script type="text/javascript" src="js/simplebar.js"></script>
+    <script type="text/javascript" src="js/ipfs-http-client.min.js"></script>
+    <script type="text/javascript" src="js/StreamSaver.js"></script>
     <script type="text/javascript" src="js/home.js"></script>
   </html>

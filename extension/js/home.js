@@ -30,6 +30,10 @@ $(document).ready((e) => {
       $('#nubox-content-content').html('');
 
       switch (title.toUpperCase()) {
+        case 'DOWNLOAD FILE':
+          showDownloadFile();
+          break;
+
         case 'LOGGING':
           showLogs();
           break;
@@ -38,6 +42,170 @@ $(document).ready((e) => {
       ele.parent().siblings().find('.nav-link').removeClass('nav-link-active');
       ele.addClass('nav-link-active');
     }
+  });
+
+  const showDownloadFile = () => {
+    const downloadDiv = `<div class="card" style="width:35%">
+                          <div class="card-header">
+                            <h6>Download files that are shared with you</h6>
+                          </div>
+                          <div class="card-body">
+                            <p style="text-align:justify">
+                              Upload the nuBox file shared with you, and nuBox will take care of downloading everything
+                              from IPFS, decrypting it, and then construct the file!
+                            </p>
+                          </div>
+                        </div>
+                        <br />
+                        <div class="card download-file-card" style="width:35%">
+                          <div class="card-body">
+                            <div class="row no-gutters">
+                              <div class="col-auto">
+                                <input type="file" id="download-file" accept=".json" hidden />
+                                <button type="button" class="btn btn-danger" id="download-file-fake">Upload nuBox file</button>
+                              </div>
+                              <div class="col-md-5 ml-auto download-status" style="visibility:hidden"></div>
+                              <div class="col-md-1 ml-auto download-spinner" style="visibility:hidden">
+                                <i class="fas fa-spinner fa-spin" style="color:#dc3545;font-size:38px"></i>
+                              </div>
+                            </div>
+                          </div>
+                          <ul class="list-group list-group-flush"></ul>
+                        </div>`;
+
+    $('#nubox-content-content').html(downloadDiv);
+  };
+
+  $('#nubox-content-content').on('change', '#download-file', async function(e) {
+    const file = e.target.files[0];
+
+    // Reset.
+    $(this).val('');
+
+    // Validate that the file name matches "nuBox.json"
+    if (file.name !== 'nuBox.json') {
+      const err = `<li class="list-group-item">
+                    Is this <b>really</b> the "nuBox.json" file shared with you?
+                  </li>`;
+      $('#nubox-content-content .download-file-card > .list-group-flush').html(err);
+      return;
+    }
+
+    $('#nubox-content-content .download-status').html('<p>Uploading</p>').css('visibility', 'visible');
+    $('#nubox-content-content .download-spinner').css('visibility', 'visible');
+
+    // Upload and parse the file.
+    let fileContents = null;
+    try {
+      fileContents = await nuBoxFile.readnuBoxFile(file);
+    } catch (error) {
+      return;
+    }
+
+    // Download the chunks from IPFS.
+    try {
+      await nuBoxFile.ipfsDownload(fileContents);
+    } catch (error) {
+      return;
+    }
+
+  });
+
+  const nuBoxFile = {
+    readnuBoxFile: (file) => {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          $('#nubox-content-content .download-status').html('<p>Parsing</p>');
+          const content = e.target.result;
+
+          try {
+            const json = JSON.parse(content);
+
+            if (json.label === undefined ||
+                json.ipfs === undefined ||
+                json.name === undefined) {
+              throw new Error('invalid nuBox file');
+            }
+
+            resolve(json);
+          } catch (error) {
+            const err = `<li class="list-group-item">
+                          Is this <b>really</b> the "nuBox.json" file shared with you? <b>Really</b>??!
+                        </li>`;
+            $('#nubox-content-content .download-file-card > .list-group-flush').html(err);
+            $('#nubox-content-content .download-status').html('').css('visibility', 'hidden');
+            $('#nubox-content-content .download-spinner').css('visibility', 'hidden');
+
+            reject(error);
+          }
+        }
+        reader.onerror = (e) => {
+          reader.abort();
+
+          const err = `<li class="list-group-item">
+                        <b>Something<b> went wrong with uploading the file!
+                      </li>`;
+          $('#nubox-content-content .download-file-card > .list-group-flush').html(err);
+          $('#nubox-content-content .download-status').html('').css('visibility', 'hidden');
+          $('#nubox-content-content .download-spinner').css('visibility', 'hidden');
+
+          reject(e);
+        }
+        reader.readAsText(file);
+      });
+    },
+
+    ipfsDownload: async (fileContents) => {
+      $('#nubox-content-content .download-status').html('<p>Decrypting</p>');
+
+      const ipfs = IpfsHttpClient('ipfs.infura.io', '5001', { protocol: 'https' });
+
+      // Open a stream.
+      const fileStream = streamSaver.createWriteStream(fileContents.name);
+      writer = fileStream.getWriter();
+
+      try {
+        for (const hash of fileContents.ipfs) {
+          const results = await ipfs.get(hash);
+          const encrypted = results[0].content.toString();
+
+          const decryptedB64 = await callExtension('decrypt', {
+            encrypted: encrypted,
+            label: fileContents.label,
+          });
+          const decrypted = IpfsHttpClient.Buffer.from(decryptedB64, 'base64');
+
+          // Put to stream.
+          writer.write(decrypted);
+        }
+
+        // Close the stream.
+        writer.close();
+
+      } catch (error) {
+        // Abort the stream.
+        if (writer !== null) {
+          writer.abort();
+        }
+
+        const err = `<li class="list-group-item">
+                      Opps! Failed to download from IPFS!!
+                    </li>`;
+        $('#nubox-content-content .download-file-card > .list-group-flush').html(err);
+        $('#nubox-content-content .download-status').html('').css('visibility', 'hidden');
+        $('#nubox-content-content .download-spinner').css('visibility', 'hidden');
+
+        throw error;
+      }
+    },
+  };
+
+  $('#nubox-content-content').on('click', '#download-file-fake', () => {
+    $('#nubox-content-content #download-file').click();
+    $('#nubox-content-content .download-file-card > .list-group-flush').html('');
+    $('#nubox-content-content .download-status').html('').css('visibility', 'hidden');
+    $('#nubox-content-content .download-spinner').css('visibility', 'hidden');
   });
 
   const showLogs = async () => {
@@ -92,7 +260,6 @@ $(document).ready((e) => {
                     </div>`;
 
       $('#nubox-content-content').html(table);
-      console.log($('#nubox-content-content > div'));
       new SimpleBar($('#nubox-content-content > div').last()[0]);
 
     } catch (err) {
