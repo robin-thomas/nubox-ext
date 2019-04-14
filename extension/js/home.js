@@ -87,12 +87,14 @@ $(document).ready((e) => {
 
   $('#nubox-content-content').on('change', '#download-file', async function(e) {
     const file = e.target.files[0];
+    $('#download-file-fake').prop('disabled', true);
 
     // Validate that the file name matches "nuBox.json"
     try {
       nuBoxFile.validateFilename(file);
     } catch (error) {
       $(this).val('');
+      $('#download-file-fake').prop('disabled', false);
       return;
     }
 
@@ -105,6 +107,7 @@ $(document).ready((e) => {
       fileContents = await nuBoxFile.readnuBoxFile(file);
     } catch (error) {
       $(this).val('');
+      $('#download-file-fake').prop('disabled', false);
       return;
     }
 
@@ -113,6 +116,7 @@ $(document).ready((e) => {
       await nuBoxFile.ipfsDownload(fileContents);
     } catch (error) {
       $(this).val('');
+      $('#download-file-fake').prop('disabled', false);
       return;
     }
 
@@ -304,7 +308,7 @@ $(document).ready((e) => {
     } catch (err) {
 
     }
-  }
+  };
 });
 
 const callExtension = (cmd, args) => {
