@@ -329,6 +329,12 @@ $(document).ready((e) => {
       } catch (err) {}
     },
 
+    getFileSize: (bytes) => {
+      const size = ['B','kB','MB','GB'];
+      const factor = Math.floor((bytes.toString().length - 1) / 3);
+      return (bytes / Math.pow(1024, factor)).toFixed(2) + size[factor];
+    },
+
     saveFile: async (file, ipfs) => {
       try {
         let files = await ChromeStorage.get();
@@ -337,6 +343,7 @@ $(document).ready((e) => {
           name: file.name,
           size: file.size,
           type: file.type,
+          created: moment().format('YYYY-MM-DD HH:mm:ss'),
           ipfs: ipfs,
         });
 
@@ -363,7 +370,7 @@ $(document).ready((e) => {
         const filename = IpfsHttpClient.Buffer.from(key, 'hex').toString();
 
         let files = await ChromeStorage.get();
-        const file = files.filter(e => e.name === filename);
+        const file = files.filter(e => e.name === filename)[0];
         files = files.filter(e => e.name !== filename);
 
         let newFileName = null;
@@ -446,6 +453,42 @@ $(document).ready((e) => {
       } catch (err) {
         throw err;
       }
+    },
+
+    fileInfo: async (e) => {
+      e.preventDefault();
+
+      // Get the file.
+      let ele = $(e.target);
+      while (!ele.hasClass('list-group-item')) {
+        ele = ele.parent();
+      }
+      const key = ele.parent().find('.fs-file-key').val();
+      const fileName = IpfsHttpClient.Buffer.from(key, 'hex').toString();
+
+      const files = await ChromeStorage.get();
+      const file = files.filter(e => e.name === fileName)[0];
+
+      const rows = `<tr>
+                      <th scope="row">Name</th>
+                      <td>${fileName}</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">Size</th>
+                      <td>${FS.getFileSize(file.size)}</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">Type</th>
+                      <td>${file.type}</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">Uploaded on</th>
+                      <td>${file.created}</td>
+                    </tr>`;
+
+      $('#file-info-dialog').find('.modal-title').html('File Info');
+      $('#file-info-dialog').find('table').html(`<tbody>${rows}</tbody>`);
+      $('#file-info-dialog').modal('show');
     },
 
     drawFile: (file) => {
@@ -616,6 +659,7 @@ $(document).ready((e) => {
     },
   };
 
+  $(document).on('click', '.popover .fs-info', FS.fileInfo);
   $(document).on('click', '.popover .fs-delete', FS.deleteFile);
   $(document).on('click', '.popover .fs-rename', FS.renameFile);
   $('#nubox-content-content').on('contextmenu', '.fs-file-icon', (e) => {

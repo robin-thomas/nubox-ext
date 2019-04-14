@@ -10,6 +10,24 @@
       <link rel="stylesheet" href="./css/home.css">
     </head>
     <body>
+      <div id="file-info-dialog" class="modal fade" role="dialog" aria-hidden="true" data-keyboard="false">
+        <div class="modal-dialog" role="document">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title">File Info</h5>
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+            <div class="modal-body">
+              <table class="table"></table>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+          </div>
+        </div>
+      </div>
       <div class="card" style="width:100%;height:100%;border:none">
         <div class="card-header">
           <img class="card-img-top" src="icons/logo_128x128.png" style="width:32px;height:32px" />
@@ -78,5 +96,6 @@
     <script type="text/javascript" src="js/jquery-ui.min.js"></script>
     <script type="text/javascript" src="js/ipfs-http-client.min.js"></script>
     <script type="text/javascript" src="js/StreamSaver.js"></script>
+    <script type="text/javascript" src="js/moment.min.js"></script>
     <script type="text/javascript" src="js/home.js"></script>
   </html>
