@@ -22,7 +22,7 @@ $(document).ready((e) => {
 
   const Display = {
     load: (e = null) => {
-      if (!e) {
+      if (e === null) {
         $('#nubox-content-title').html('MY NUBOX');
         $('#nubox-content-content').html('');
         Display.showMyNuBox();
@@ -90,6 +90,7 @@ $(document).ready((e) => {
                         </div>`;
 
       $('#nubox-content-content').html(uploadDiv);
+      FS.init();
     },
 
     showDownloadFile: () => {
@@ -328,7 +329,9 @@ $(document).ready((e) => {
         for (const file of files) {
           FS.drawFile(file);
         }
-      } catch (err) {}
+      } catch (err) {
+        console.log(err);
+      }
     },
 
     getFileSize: (bytes) => {
@@ -347,9 +350,20 @@ $(document).ready((e) => {
           type: file.type,
           created: moment().format('YYYY-MM-DD HH:mm:ss'),
           ipfs: ipfs,
+          shared: [],
         });
 
         await ChromeStorage.set(files);
+
+        // Grant Bob with access.
+        const bob = await callExtension('bob_keys');
+        await callExtension('grant', {
+          label: file.name,
+          bek: bob.bek,
+          bvk: bob.bvk,
+          expiration: '3017-01-01 00:00:00',
+          noPopup: true,
+        })
 
         // Update the UI.
         FS.drawFile(file);
@@ -678,6 +692,10 @@ $(document).ready((e) => {
 
         throw error;
       }
+
+      $('#nubox-content-content .download-file-card > .list-group-flush').html('');
+      $('#nubox-content-content .download-status').html('').css('visibility', 'hidden');
+      $('#nubox-content-content .download-spinner').css('visibility', 'hidden');
     },
   };
 
@@ -713,6 +731,33 @@ $(document).ready((e) => {
     }
   });
 
+  $('#download-nubox-share-file').on('click', async (e) => {
+    e.preventDefault();
+
+    const key = $('#share-file-dialog').find('#share-file-path').val();
+    const filename = IpfsHttpClient.Buffer.from(key, 'hex').toString();
+
+    try {
+      const files = await ChromeStorage.get();
+      const file = files.filter(e => e.name === filename)[0];
+
+      const textFile = window.URL.createObjectURL(new Blob([JSON.stringify({
+        name: filename,
+        label: filename,
+        ipfs: file.ipfs,
+      }, null, 4)], { type: 'text/plain' }));
+
+      // Trigger download.
+      const anchor = document.createElement('a');
+      anchor.href = textFile;
+      anchor.target = '_blank';
+      anchor.download = 'nuBox.json';
+      anchor.click();
+
+    } catch (err) {
+      console.log(err);
+    }
+  });
   $('#nubox-content-content').on('click', '#download-file-fake', () => {
     $('#nubox-content-content #download-file').click();
     $('#nubox-content-content .download-file-card > .list-group-flush').html('');
@@ -728,7 +773,6 @@ $(document).ready((e) => {
 
   // Load initial page.
   Display.load();
-  FS.init();
 });
 
 const callExtension = (cmd, args) => {
