@@ -1,0 +1,132 @@
+body {
+  height: 100vh;
+  font-family: 'Open Sans',sans-serif
+}
+
+::-webkit-scrollbar {
+  display: none
+}
+
+.dot {
+  height: 10px;
+  width: 10px;
+  border-radius: 50%;
+  display: inline-block
+}
+
+.online-dot {
+  background-color: #28a745
+}
+
+.offline-dot {
+  background-color: #dc3545
+}
+
+.online {
+  color: #28a745
+}
+
+.offline {
+  color: #dc3545
+}
+
+.offline,
+.online {
+  margin-top: 5px;
+  font-size: 14px;
+  float: right;
+  text-align: right;
+  visibility: hidden;
+  position: absolute;
+  right:15px
+}
+
+nav {
+  padding: 25px
+}
+
+.nav-link {
+  color: black;
+  transition: all 0.3s;
+  height: 50px;
+  line-height: 35px;
+  font-weight: 800
+}
+
+.nav-link-active,
+.nav-link-active:hover {
+  background: #FFBCC3;
+  color: #dc3545;
+  border-radius: 0 50px 50px 0;
+  font-weight: 800
+}
+
+.nav-link:not(.nav-link-active):hover {
+  background: #E2E2E2;
+  border-radius: 0 50px 50px 0;
+  color: black
+}
+
+#nubox-content-title {
+  font-size: 27px;
+  text-transform: uppercase;
+  color: #6c757d;
+  margin-bottom: 20px
+}
+
+#nubox-content-content {
+  color: #6c757d
+}
+
+.download-status > p,
+.upload-status > p {
+  text-align: right;
+  margin-top: 9px;
+  font-size: 12px
+}
+
+.download-file-card > .list-group-flush > .list-group-item,
+.upload-file-card > .list-group-flush > .list-group-item {
+  font-size: 12px;
+  color: #dc3545;
+  background: rgba(0,0,0,.03)
+}
+
+.fs-file-name {
+  font-size: 15px;
+  padding: 0 25px !important;
+}
+
+.fs-file-icon {
+  font-size: 60px;
+  cursor: pointer !important;
+  padding: 10px;
+}
+
+.popover {
+  width: 250px;
+  font-size: 15px;
+  box-shadow: 0 0 2em rgba(0,0,0,0.3);
+  border: none;
+}
+
+.popover-body {
+  padding: 0 !important;
+  border: 0 !important;
+}
+
+.popover-body .list-group-item {
+  border: 0 !important;
+  color: #555;
+  text-decoration: none;
+}
+
+.popover-body .list-group-item:hover {
+  color: #555;
+  text-decoration: none;
+  background-color: #f5f5f5;
+}
+
+.popover-body .list-group-item > i {
+  width: 25px;
+}
