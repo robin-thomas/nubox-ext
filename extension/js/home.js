@@ -245,6 +245,8 @@ $(document).ready((e) => {
   $('#nubox-content-content').on('change', '#upload-file', async function(e) {
     const file = e.target.files[0];
 
+    // TODO: check whether this name is already used for a file.
+
     $('#upload-file-fake').prop('disabled', true);
     $('#nubox-content-content .upload-status').html('<p>Uploading</p>').css('visibility', 'visible');
     $('#nubox-content-content .upload-spinner').css('visibility', 'visible');
@@ -540,6 +542,26 @@ $(document).ready((e) => {
       // const el = new SimpleBar(fsEle[0]);
       // el.recalculate();
     },
+
+    constructShareFileUI: async (e) => {
+      e.preventDefault();
+
+      $('#share-file-expiration').val('');
+      $('#share-file-expiration').datepicker({
+        minDate: new Date(new Date().getTime() + (24 * 60 * 60 * 1000)),
+        dateFormat: 'yy-mm-dd',
+      });
+
+      // Get the file key and store it in the share-file dialog.
+      let ele = $(e.target);
+      while (!ele.hasClass('list-group-item')) {
+        ele = ele.parent();
+      }
+      const key = ele.parent().find('.fs-file-key').val();
+      $('#share-file-dialog').find('#share-file-path').val(key);
+
+      $('#share-file-dialog').modal('show');
+    },
   };
 
   const nuBoxFile = {
@@ -659,6 +681,7 @@ $(document).ready((e) => {
     },
   };
 
+  $(document).on('click', '.popover .fs-share', FS.constructShareFileUI);
   $(document).on('click', '.popover .fs-info', FS.fileInfo);
   $(document).on('click', '.popover .fs-delete', FS.deleteFile);
   $(document).on('click', '.popover .fs-rename', FS.renameFile);
@@ -681,6 +704,12 @@ $(document).ready((e) => {
     if (popover.length >= 1) {
       const id = popover.first().attr('id');
       $('#nubox-content-content').find(`[aria-describedBy="${id}"]`).popover('hide');
+    }
+  });
+  $('#share-file-dialog .input-group-append').on('click', () => {
+    const open = $('#share-file-dialog').find('#share-file-expiration').datepicker('widget').is(':visible');
+    if (!open) {
+      $('#share-file-dialog').find('#share-file-expiration').datepicker('show');
     }
   });
 
