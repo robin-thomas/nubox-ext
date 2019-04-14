@@ -236,8 +236,20 @@ $(document).ready((e) => {
       for (const log of logs) {
         let message = log.message;
         try {
+          for (arg of Object.keys(message)) {
+            if (message[arg].length > 100) {
+              const val = message[arg];
+              message[arg] = val.substr(0, 50) + ' <b>...</b> ' + val.substr(val.length - 50);
+            }
+          }
+
           message = JSON.stringify(message);
           message = message.replace (/(^")|("$)/g, '');
+
+          if (log.cmd === 'encrypt' && message.length > 100) {
+            message = message.substr(0, 50) + ' <b>...</b> ' + message.substr(message.length - 50);
+          }
+
         } catch (err) {
           message = log.message;
         };
@@ -247,7 +259,7 @@ $(document).ready((e) => {
           for (arg of Object.keys(args)) {
             if (args[arg].length > 100) {
               const val = args[arg];
-              args[arg] = val.substr(0, 50) + '...' + val.substr(val.length - 50);
+              args[arg] = val.substr(0, 50) + ' <b>...</b> ' + val.substr(val.length - 50);
             }
           }
 
@@ -279,7 +291,7 @@ $(document).ready((e) => {
                         </thead>
                       </table>
                     </div>
-                    <div style="font-size:14px;height:calc(100vh - 275px)">
+                    <div style="font-size:14px;height:70vh">
                       <table class="table table-striped table-bordered table-hover"
                              style="table-layout:fixed;word-wrap:break-word">
                         <tbody>${trows}</tbody>
