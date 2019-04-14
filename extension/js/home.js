@@ -350,7 +350,7 @@ $(document).ready((e) => {
       }
     },
 
-    renameFile: (e) => {
+    renameFile: async (e) => {
       try {
         e.preventDefault();
 
@@ -377,7 +377,7 @@ $(document).ready((e) => {
 
           // Make sure that the filename matches the name syntax.
           if (newFileName.trim().length < 1 ||
-              !/^[_a-zA-Z][_a-zA-Z0-9.]*$/.test(newFileName)) {
+              !/^[0-9_a-zA-Z][_a-zA-Z0-9.]*$/.test(newFileName)) {
             continue;
           }
 
@@ -393,17 +393,37 @@ $(document).ready((e) => {
           name: newFileName,
           size: file.size,
           type: file.type,
-          ipfs: ipfs,
+          ipfs: file.ipfs,
         });
 
         await ChromeStorage.set(files);
+
+        const newKey = IpfsHttpClient.Buffer.from(newFileName).toString('hex');
+        const hidden = $('#nubox-fs').find(`.fs-file-total > input[type="hidden"][value=${key}]`);
+        hidden.val(newKey);
+        hidden.parent().find('.fs-file-name').html(newFileName);
+        hidden.parent().find('[data-toggle="popover"]').popover('dispose');
+        hidden.parent().find('[data-toggle="popover"]').popover({
+          trigger: 'manual',
+          html: true,
+          content: function() {
+            return `<ul id="popover-content" class="list-group">
+                      <input class="fs-file-key" type="hidden" value="${newKey}" />
+                      <a href="#" class="fs-download list-group-item"><i class="fas fa-download"></i><span>Download</span></a>
+                      <a href="#" class="fs-delete list-group-item"><i class="far fa-trash-alt"></i><span>Delete</span></a>
+                      <a href="#" class="fs-rename list-group-item"><i class="far fa-edit"></i><span>Rename</span></a>
+                      <a href="#" class="fs-info list-group-item"><i class="fas fa-info-circle"></i><span>Info</span></a>
+                      <a href="#" class="fs-share list-group-item"><i class="fas fa-share-alt"></i><span>Share</span></a>
+                    </ul>`;
+          }
+        });
 
       } catch (err) {
         throw err;
       }
     },
 
-    deleteFile: (e) => {
+    deleteFile: async (e) => {
       try {
         e.preventDefault();
 
@@ -415,9 +435,13 @@ $(document).ready((e) => {
         const key = ele.parent().find('.fs-file-key').val();
         const filename = IpfsHttpClient.Buffer.from(key, 'hex').toString();
 
-        let files = await ChromeStorage.get();
-        files = files.filter(e => e.name !== filename);
-        await ChromeStorage.set(files);
+        if (confirm(`Are you sure you want to delete "${filename}"?`)) {
+          let files = await ChromeStorage.get();
+          files = files.filter(e => e.name !== filename);
+          await ChromeStorage.set(files);
+
+          $('#nubox-fs').find(`.fs-file-total > input[type="hidden"][value=${key}]`).parent().remove();
+        }
 
       } catch (err) {
         throw err;
