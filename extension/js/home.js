@@ -249,11 +249,13 @@ $(document).ready((e) => {
     // check whether this name is already used for a file.
     let files = await ChromeStorage.get();
 
+    let count = 0;
     let filename = file.name;
+    const name = filename.substring(0, filename.lastIndexOf('.'));
+    const ext = filename.substring(filename.lastIndexOf('.') + 1);
     while (files.filter(e => e.name === filename).length > 0) {
-      const name = filename.substring(0, filename.lastIndexOf('.'));
-      const ext = filename.substring(filename.lastIndexOf('.') + 1);
-      filename = name + '_1.' + ext;
+      ++count;
+      filename = `${name}_${count}.${ext}`;
     }
     file = new File([file], filename, { type: file.type });
 
@@ -282,6 +284,7 @@ $(document).ready((e) => {
       await FS.saveFile(file, hashes);
 
     } catch (err) {
+      console.log(err);
       $(this).val('');
       $('#upload-file-fake').prop('disabled', false);
       $('#nubox-content-content .upload-status').html('').css('visibility', 'hidden');
