@@ -19,13 +19,13 @@
   "homepage": "https://github.com/robin-thomas/nubox-ext#readme",
   "dependencies": {
     "base64-emoji": "^2.1.0",
+    "cheerio": "^1.0.0-rc.3",
     "gmail-js": "^0.9.4"
   },
   "devDependencies": {
     "grunt": "^1.0.4",
     "grunt-browserify": "^5.3.0",
     "grunt-contrib-uglify-es": "^3.3.0",
-    "grunt-eslint": "^21.0.0",
-    "grunt-run": "^0.8.1"
+    "grunt-eslint": "^21.0.0"
   }
 }
