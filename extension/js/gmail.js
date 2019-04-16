@@ -5,9 +5,22 @@ const gmail = new Gmail();
 
 const nuBoxGmail = {
   init: () => {
-    gmail.observe.on('open_email', function(id, url, body, xhr) {
+    gmail.observe.on('open_email', async function(id) {
       const data = gmail.new.get.email_data(id);
       console.log(data);
+
+      const label = data.subject;
+      const body = data.content_html;
+
+      // TODO: detect encrypted emails and try to decrypt them alone.
+
+      try {
+        const html = await nuBoxGmail.decryptEmail(label, body);
+        console.log(html);
+        gmail.dom.email(id).body(html);
+      } catch (err) {
+        // Ignore.
+      }
     });
 
     gmail.observe.on('compose', function(compose, type) {
@@ -20,21 +33,32 @@ const nuBoxGmail = {
 
       gmail.tools.add_compose_button(composeRef, 'Decrypt (nuBox)', async function() {
         this.innerHTML = 'Decrypting&nbsp;&nbsp;<span class="nubox-r-c-btn-loader"></span>';
-        await nuBoxGmail.decryptEmail(composeRef);
+
+        const label = composeRef.subject();
+        const body = composeRef.body();
+
+        try {
+          const html = await nuBoxGmail.decryptEmail(label, body);
+          composeRef.body(html);
+
+        } catch (err) {
+          gmail.tools.add_modal_window('Decrypt with nuBox', err.message,
+            () => {
+                gmail.tools.remove_modal_window();
+            });
+        }
+
         this.innerHTML = 'Decrypt (nuBox)';
       }, 'nubox-r-c-btn-r');
     });
   },
 
-  decryptEmail: async (composeRef) => {
-    // Use the email subject as label.
-    const label = composeRef.subject();
-    if (label === undefined || label === null || label.trim().length === 0) {
-      gmail.tools.add_modal_window('Decrypt with nuBox', 'Subject cannot be empty!',
-        () => {
-            gmail.tools.remove_modal_window();
-        });
-      return;
+  decryptEmail: async (label, body) => {
+    // Validate label.
+    if (label === undefined ||
+        label === null ||
+        label.trim().length === 0) {
+      throw new Error('Subject cannot be empty!');
     }
 
     // TODO: after decryting, remove the grant.
@@ -42,7 +66,6 @@ const nuBoxGmail = {
 
     // Retrieve the email body.
     // Handle Google emoijis (which are loaded only if page is refreshed or email is sent)
-    let body = composeRef.body();
     const $ = cheerio.load(body);
     if ($('img[goomoji]').length > 0) {
       body = $('img[goomoji]').map((i, el) => $(el).attr('alt')).get().join('');
@@ -52,16 +75,10 @@ const nuBoxGmail = {
       // Decrypt the body with NuCypher.
       const encrypted = emoji.decode(body).toString();
       const decrypted = await nuBox.decrypt(encrypted, label);
-      composeRef.body(Buffer.from(decrypted, 'base64').toString());
-
+      return Buffer.from(decrypted, 'base64').toString();
     } catch (err) {
       console.log(err);
-      composeRef.body(body);
-
-      gmail.tools.add_modal_window('Decrypt with nuBox', 'Something went wrong while decrypting!',
-        () => {
-            gmail.tools.remove_modal_window();
-        });
+      throw new Error('Something went wrong while decrypting!');
     }
   },
 
