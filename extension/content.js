@@ -1,5 +1,5 @@
 // Inject API to web page
-const injectnuBoxScript = (name, css = false) => {
+const injectnuBox = (name, css = false) => {
   const s = document.createElement(css ? 'style' : 'script');
   if (css) {
     s.innerHTML = name;
@@ -11,9 +11,27 @@ const injectnuBoxScript = (name, css = false) => {
   }
   (document.head||document.documentElement).appendChild(s);
 };
-injectnuBoxScript('nubox.js');
-injectnuBoxScript('gmail.js');
-injectnuBoxScript('.nubox-r-c-btn-r {background:#dc3545 !important}', true);
+injectnuBox('nubox.js');
+injectnuBox('gmail.js');
+injectnuBox(`
+  .nubox-r-c-btn-r {
+    background:#dc3545 !important
+  }
+
+  .nubox-r-c-btn-loader {
+    border-radius: 50%;
+    border-top: 2px solid #fff;
+    border-left: 2px solid #fff;
+    width: 16px;
+    height: 16px;
+    animation: nubox-spin 1s linear infinite;
+  }
+
+  @keyframes nubox-spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+`, true);
 
 // Add listener to wait for events from the injected script.
 document.addEventListener('nuBox.api.request', (data) => {

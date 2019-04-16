@@ -18,8 +18,13 @@ const nuBoxGmail = {
         nuBoxGmail.encryptEmail(composeRef);
       }, 'nubox-r-c-btn-r');
 
-      gmail.tools.add_compose_button(composeRef, 'Decrypt (nuBox)', () => {
-        nuBoxGmail.decryptEmail(composeRef);
+      gmail.tools.add_compose_button(composeRef, 'Decrypt (nuBox)', async function() {
+        this.innerHTML = 'Decrypting&nbsp;&nbsp;<span class="nubox-r-c-btn-loader"></span>';
+
+        await nuBoxGmail.decryptEmail(composeRef);
+
+        this.innerHTML = 'Decrypt (nuBox)';
+
       }, 'nubox-r-c-btn-r');
     });
   },
