@@ -1,0 +1,30 @@
+{
+  "name": "nubox-ext",
+  "version": "1.0.0",
+  "description": "Use Nucypher at its best, without any of its complexities",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "grunt"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/robin-thomas/nubox-ext.git"
+  },
+  "author": "Robin Thomas",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/robin-thomas/nubox-ext/issues"
+  },
+  "homepage": "https://github.com/robin-thomas/nubox-ext#readme",
+  "dependencies": {
+    "gmail-js": "^0.9.4"
+  },
+  "devDependencies": {
+    "grunt": "^1.0.4",
+    "grunt-browserify": "^5.3.0",
+    "grunt-contrib-uglify-es": "^3.3.0",
+    "grunt-eslint": "^21.0.0",
+    "grunt-run": "^0.8.1"
+  }
+}

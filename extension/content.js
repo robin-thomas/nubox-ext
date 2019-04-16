@@ -1,10 +1,19 @@
 // Inject API to web page
-const s = document.createElement('script');
-s.src = chrome.extension.getURL('nubox.js');
-s.onload = function() {
-  this.parentNode.removeChild(this);
+const injectnuBoxScript = (name, css = false) => {
+  const s = document.createElement(css ? 'style' : 'script');
+  if (css) {
+    s.innerHTML = name;
+  } else {
+    s.src = chrome.extension.getURL(name);
+    s.onload = function() {
+      this.parentNode.removeChild(this);
+    };
+  }
+  (document.head||document.documentElement).appendChild(s);
 };
-(document.head||document.documentElement).appendChild(s);
+injectnuBoxScript('nubox.js');
+injectnuBoxScript('gmail.js');
+injectnuBoxScript('.nubox-r-c-btn-r {background:#dc3545 !important}', true);
 
 // Add listener to wait for events from the injected script.
 document.addEventListener('nuBox.api.request', (data) => {

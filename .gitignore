@@ -79,3 +79,5 @@ typings/
 .dynamodb/
 
 __pycache__
+package-lock.json
+extension/js/gmail.b.js
