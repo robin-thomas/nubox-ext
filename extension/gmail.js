@@ -12,6 +12,11 @@ const nuBoxGmail = {
       nuBox.approve();
     }
 
+    gmail.observe.on('open_email', function(id, url, body, xhr) {
+      const data = gmail.new.get.email_data(id);
+      console.log(data);
+    });
+
     gmail.observe.on('compose', function(compose, type) {
       // Add button to the "Compose Email".
       const composeRef = gmail.dom.composes()[0];
@@ -22,11 +27,8 @@ const nuBoxGmail = {
 
       gmail.tools.add_compose_button(composeRef, 'Decrypt (nuBox)', async function() {
         this.innerHTML = 'Decrypting&nbsp;&nbsp;<span class="nubox-r-c-btn-loader"></span>';
-
         await nuBoxGmail.decryptEmail(composeRef);
-
         this.innerHTML = 'Decrypt (nuBox)';
-
       }, 'nubox-r-c-btn-r');
     });
   },
@@ -41,6 +43,9 @@ const nuBoxGmail = {
         });
       return;
     }
+
+    // TODO: after decryting, remove the grant.
+    // since if the user tries to encrypt again, another grant is requested.
 
     // Retrieve the email body.
     // Handle Google emoijis (which are loaded only if page is refreshed or email is sent)
