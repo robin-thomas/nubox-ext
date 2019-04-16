@@ -5,11 +5,6 @@ const gmail = new Gmail();
 
 const nuBoxGmail = {
   init: () => {
-    // Ask for user Approval
-    if (gmail.check.is_new_gui()) {
-      nuBox.approve();
-    }
-
     gmail.observe.on('open_email', function(id, url, body, xhr) {
       const data = gmail.new.get.email_data(id);
       console.log(data);

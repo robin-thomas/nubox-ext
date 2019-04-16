@@ -100,6 +100,7 @@ const Approval = {
 };
 Approval.reset();
 Approval.approve(chrome.runtime.id);
+Approval.approve('mail.google.com');
 
 const Callbacks = {
   callbacks: {},
