@@ -18,6 +18,7 @@
   },
   "homepage": "https://github.com/robin-thomas/nubox-ext#readme",
   "dependencies": {
+    "base64-emoji": "^2.1.0",
     "gmail-js": "^0.9.4"
   },
   "devDependencies": {

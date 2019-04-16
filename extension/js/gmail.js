@@ -1,13 +1,19 @@
+const emoji = require('base64-emoji');
 const { Gmail } = require('gmail-js');
 const gmail = new Gmail();
 
 const nuBoxGmail = {
   init: () => {
+    // Ask for user Approval
+    if (gmail.check.is_new_gui()) {
+      nuBox.approve();
+    }
+
     gmail.observe.on('compose', function(compose, type) {
       // Add button to the "Compose Email".
       const composeRef = gmail.dom.composes()[0];
 
-      gmail.tools.add_compose_button(composeRef, 'Encrypt with nuBox', () => {
+      gmail.tools.add_compose_button(composeRef, 'Encrypt with nuBox', async () => {
         // Use the email subject as label.
         const label = composeRef.subject();
         if (label === undefined || label === null || label.trim().length === 0) {
@@ -18,8 +24,29 @@ const nuBoxGmail = {
           return;
         }
 
-        // TODO: Encrypt the body with NuCypher.
+        // Retrieve the email body.
         const body = composeRef.body();
+
+        try {
+          // Encrypt the body with NuCypher.
+          const encrypted = await nuBox.encrypt(body, label);
+
+          // Encode the text to emojis!
+          composeRef.body(emoji.encode(encrypted).toString());
+
+          // Grant approval for this user (so he/she can read his own emails).
+          const bob = await nuBox.getBobKeys();
+          await nuBox.grant(label, bob.bek, bob.bvk, '3017-01-01 00:00:00', true);
+
+        } catch (err) {
+          console.log(err);
+          composeRef.body(body);
+
+          gmail.tools.add_modal_window('Encrypt with nuBox', 'Something went wrong while encrypting!',
+            () => {
+                gmail.tools.remove_modal_window();
+            });
+        }
 
       }, 'nubox-r-c-btn-r');
     });

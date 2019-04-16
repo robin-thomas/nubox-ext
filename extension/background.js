@@ -13,10 +13,20 @@ const Logging = {
 
       // Decode it back for human-readable form.
       if (args.label !== undefined) {
-        args.label = IpfsHttpClient.Buffer.from(args.label, 'hex').toString();
+        const label = args.label;
+        try {
+          args.label = IpfsHttpClient.Buffer.from(label, 'hex').toString();
+        } catch (err) {
+          args.label = label;
+        }
       }
       if (args.plaintext !== undefined) {
-        args.plaintext = IpfsHttpClient.Buffer.from(args.plaintext, 'base64').toString();
+        const plaintext = args.plaintext;
+        try {
+          args.plaintext = IpfsHttpClient.Buffer.from(plaintext, 'base64').toString();
+        } catch (err) {
+          args.plaintext = plaintext;
+        }
       }
 
       Logging.getLogs().then((logs) => {
