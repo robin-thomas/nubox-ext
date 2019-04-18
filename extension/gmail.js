@@ -27,8 +27,7 @@ const nuBoxGmail = {
       // TODO: detect encrypted emails and try to decrypt them alone.
 
       try {
-        const html = 'hello'; //await nuBoxGmail.decryptEmail(label, content);
-        console.log(gmail.get.email_id());
+        const html = await nuBoxGmail.decryptEmail(label, content);
         new gmail.dom.email(data.legacy_email_id).body(html);
       } catch (err) {
         console.log(err);
