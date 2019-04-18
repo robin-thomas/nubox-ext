@@ -389,6 +389,17 @@ const Process = {
   },
 
   revoke: (msgId, args, sender) => {
+    // noPopup activated.
+    if (args.noPopup === true) {
+      port.postMessage({
+        id: msgId,
+        cmd: 'revoke',
+        args: args,
+      });
+
+      return;
+    }
+
     // open up the grant popup which asks for user permission.
     const popup = window.open('revoke.html', 'extension_popup',
       'width=315,height=555,top=25,left=25,toolbar=no,location=no,scrollbars=no,resizable=no,status=no,menubar=no,directories=no');

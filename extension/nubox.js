@@ -31,6 +31,9 @@ const nuBoxCallback = {
         reject: reject,
       });
 
+      args = (args === undefined || args === null) ? {} : args;
+      args.host = window.location.hostname;
+
       const event = new CustomEvent('nuBox.api.request', {
         detail: {
           msgId: msgId,
@@ -87,14 +90,13 @@ const nuBox = {
         bvk: bob_verifying_key,
         expiration: expiration,
         noPopup: noPopup,
-        host: window.location.hostname,
       });
     } catch (err) {
       throw err;
     }
   },
 
-  revoke: async (label, bvk) => {
+  revoke: async (label, bvk, noPopup = false) => {
     try {
       if (label === undefined || label === null) {
         throw new Error('missing label in revoke request');
@@ -106,7 +108,7 @@ const nuBox = {
       await nuBoxCallback.callExtension('revoke', {
         label: label,
         bvk: bvk,
-        host: window.location.hostname,
+        noPopup: noPopup,
       });
     } catch (err) {
       throw err;
@@ -126,7 +128,6 @@ const nuBox = {
         plaintext: plaintext,
         label: label,
         ipfs: ipfs,
-        host: window.location.hostname,
       });
     } catch (err) {
       throw err;
@@ -146,7 +147,6 @@ const nuBox = {
         encrypted: encrypted,
         label: label,
         ipfs: ipfs,
-        host: window.location.hostname,
       });
     } catch (err) {
       throw err;
@@ -160,7 +160,6 @@ const nuBox = {
         blob: blob,
         label: label,
         ipfs: ipfs,
-        host: window.location.hostname,
       });
     } catch (err) {
       throw err;
@@ -169,9 +168,7 @@ const nuBox = {
 
   getBobKeys: async () => {
     try {
-      return await nuBoxCallback.callExtension('bob_keys', {
-        host: window.location.hostname,
-      });
+      return await nuBoxCallback.callExtension('bob_keys');
     } catch (err) {
       throw err;
     }
@@ -180,7 +177,6 @@ const nuBox = {
   approve: async () => {
     try {
       return await nuBoxCallback.callExtension('approve', {
-        host: window.location.hostname,
         title: document.title,
       });
     } catch (err) {

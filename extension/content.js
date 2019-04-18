@@ -39,23 +39,36 @@ document.addEventListener('nuBox.api.request', (data) => {
 
   // Grant request if coming for Bob in same machine
   // and requested for no popup.
-  if (msg.cmd === 'grant' && msg.args[4] === true) {
+  if ((msg.cmd === 'grant' || msg.cmd === 'revoke') &&
+       msg.args.noPopup === true) {
     // Get Bob keys.
     const msgId = Math.random().toString(36).substring(7);
     const newMsg = {
       msgId: msgId,
       cmd: 'bob_keys',
-      args: [],
+      args: {},
     };
 
-    msg.args[4] = false; // noPopup will be turned on if security check passes.
+    msg.args.noPopup = false; // noPopup will be turned on if security check passes.
     chrome.runtime.sendMessage(newMsg, (response) => {
       if (response.type === 'success') {
         const bob = response.result;
-        if (msg.args[1] === bob.bek &&
-            msg.args[2] === bob.bvk) {
-          // Its bob in same machine.
-          msg.args[4] = true;
+
+        switch (msg.cmd) {
+          case 'grant':
+            if (msg.args.bek === bob.bek &&
+                msg.args.bvk === bob.bvk) {
+              // Its bob in same machine.
+              msg.args.noPopup = true;
+            }
+            break;
+
+          case 'revoke':
+            if (msg.args.bvk === bob.bvk) {
+              // Its bob in same machine.
+              msg.args.noPopup = true;
+            }
+            break;
         }
       }
 
@@ -64,7 +77,8 @@ document.addEventListener('nuBox.api.request', (data) => {
       });
     });
   } else {
-    msg.args[4] = false; // noPopup turned off.
+    msg.args.noPopup = false; // noPopup turned off.
+
     chrome.runtime.sendMessage(msg, (response) => {
       sendResponse(msg.msgId, response);
     });

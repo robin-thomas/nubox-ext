@@ -38,7 +38,7 @@ const nuBoxGmail = {
         const body = composeRef.body();
 
         try {
-          const html = await nuBoxGmail.decryptEmail(label, body);
+          const html = await nuBoxGmail.decryptEmail(label, body, true /* compose */);
           composeRef.body(html);
 
         } catch (err) {
@@ -53,16 +53,13 @@ const nuBoxGmail = {
     });
   },
 
-  decryptEmail: async (label, body) => {
+  decryptEmail: async (label, body, compose = false) => {
     // Validate label.
     if (label === undefined ||
         label === null ||
         label.trim().length === 0) {
       throw new Error('Subject cannot be empty!');
     }
-
-    // TODO: after decryting, remove the grant.
-    // since if the user tries to encrypt again, another grant is requested.
 
     // Retrieve the email body.
     // Handle Google emoijis (which are loaded only if page is refreshed or email is sent)
@@ -75,6 +72,14 @@ const nuBoxGmail = {
       // Decrypt the body with NuCypher.
       const encrypted = emoji.decode(body).toString();
       const decrypted = await nuBox.decrypt(encrypted, label);
+
+      // after decryting, remove the grant.
+      // since if the user tries to encrypt again, another grant is automatically requested.
+      if (compose) {
+        const bob = await nuBox.getBobKeys();
+        await nuBox.revoke(label, bob.bvk, true /* noPopup */);
+      }
+
       return Buffer.from(decrypted, 'base64').toString();
     } catch (err) {
       console.log(err);
