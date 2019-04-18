@@ -38,7 +38,7 @@ const nuBoxCallback = {
         detail: {
           msgId: msgId,
           cmd: cmd,
-          args: args === undefined ? [] : args,
+          args: args,
         },
         bubbles: true,
       });

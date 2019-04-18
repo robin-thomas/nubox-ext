@@ -5,20 +5,30 @@ const gmail = new Gmail();
 
 const nuBoxGmail = {
   init: () => {
-    gmail.observe.on('open_email', async function(id) {
-      const data = gmail.new.get.email_data(id);
+    gmail.observe.on('open_email', async function(id, url, body, xhr) {
+      let retries = 0;
+      let data = gmail.new.get.email_data(id);
+      while (++retries <= 5 && data.content_html.trim().length === 0) {
+        data = gmail.new.get.email_data(id);
+      }
+
       console.log(data);
 
       const label = data.subject;
-      const body = data.content_html;
+      const content = data.content_html;
+
+      // Nothing to decrypt.
+      if (content.trim().length === 0) {
+        return;
+      }
 
       // TODO: detect encrypted emails and try to decrypt them alone.
 
       try {
-        const html = await nuBoxGmail.decryptEmail(label, body);
-        console.log(html);
-        gmail.dom.email(id).body(html);
+        const html = await nuBoxGmail.decryptEmail(label, content);
+        new gmail.dom.email(data.legacy_email_id).body(html);
       } catch (err) {
+        console.log(err);
         // Ignore.
       }
     });
@@ -110,7 +120,7 @@ const nuBoxGmail = {
 
       // Grant approval for this user (so he/she can read his own emails).
       const bob = await nuBox.getBobKeys();
-      await nuBox.grant(label, bob.bek, bob.bvk, '3017-01-01 00:00:00', true);
+      await nuBox.grant(label, bob.bek, bob.bvk, '3017-01-01 00:00:00', true /* noPopup */);
 
     } catch (err) {
       console.log(err);

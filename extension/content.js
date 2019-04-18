@@ -46,7 +46,9 @@ document.addEventListener('nuBox.api.request', (data) => {
     const newMsg = {
       msgId: msgId,
       cmd: 'bob_keys',
-      args: {},
+      args: {
+        host: window.location.hostname,
+      },
     };
 
     msg.args.noPopup = false; // noPopup will be turned on if security check passes.
@@ -77,8 +79,6 @@ document.addEventListener('nuBox.api.request', (data) => {
       });
     });
   } else {
-    msg.args.noPopup = false; // noPopup turned off.
-
     chrome.runtime.sendMessage(msg, (response) => {
       sendResponse(msg.msgId, response);
     });
