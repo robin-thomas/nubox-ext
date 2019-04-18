@@ -20,7 +20,7 @@
   "dependencies": {
     "base64-emoji": "^2.1.0",
     "cheerio": "^1.0.0-rc.3",
-    "gmail-js": "^0.9.4"
+    "gmail-js": "^0.9.5"
   },
   "devDependencies": {
     "grunt": "^1.0.4",

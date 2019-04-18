@@ -6,33 +6,36 @@ const { Gmail } = require('gmail-js');
 const gmail = new Gmail();
 
 const nuBoxGmail = {
+  key: 'nuBox-robin-thomas',
+
   init: () => {
-    gmail.observe.on('open_email', async function(id, url, body, xhr) {
-      let retries = 0;
-      let data = gmail.new.get.email_data(id);
-      while (++retries <= 5 && data.content_html.trim().length === 0) {
-        data = gmail.new.get.email_data(id);
-      }
+    gmail.observe.on('view_email', (domEmail) => {
+      const intervalId = setInterval(() => {
+        const emailData = gmail.new.get.email_data(domEmail);
 
-      console.log(data);
+        if (emailData !== null &&
+            emailData !== undefined) {
+          const label = emailData.subject;
+          const content = emailData.content_html;
 
-      const label = data.subject;
-      const content = data.content_html;
+          // Nothing to decrypt.
+          if (content.trim().length === 0) {
+            clearInterval(intervalId);
+            return;
+          }
 
-      // Nothing to decrypt.
-      if (content.trim().length === 0) {
-        return;
-      }
+          nuBoxGmail.decryptEmail(label, content).then((html) => {
+            // TODO: detect encrypted emails and try to decrypt them alone.
+            if (html !== null) {
+              domEmail.body(html);
+            }
+          }).catch((err) => {
+            console.log(err);
+          });
 
-      // TODO: detect encrypted emails and try to decrypt them alone.
-
-      try {
-        const html = await nuBoxGmail.decryptEmail(label, content);
-        new gmail.dom.email(data.legacy_email_id).body(html);
-      } catch (err) {
-        console.log(err);
-        // Ignore.
-      }
+          clearInterval(intervalId);
+        }
+      }, 500);
     });
 
     gmail.observe.on('compose', function(compose, type) {
@@ -82,7 +85,13 @@ const nuBoxGmail = {
 
     try {
       // Decrypt the body with NuCypher.
-      const encrypted = emoji.decode(body).toString();
+      const header = Buffer.from(nuBoxGmail.key).toString('base64');
+      const headerEmoji = emoji.encode(header).toString();
+      if (!body.startsWith(headerEmoji)) {
+        console.log('not encrypted email');
+        return null;
+      }
+      const encrypted = emoji.decode(body.substring(headerEmoji.length)).toString();
       const decrypted = await nuBox.decrypt(encrypted, label);
 
       // after decryting, remove the grant.
@@ -118,7 +127,9 @@ const nuBoxGmail = {
       const encrypted = await nuBox.encrypt(body, label);
 
       // Encode the text to emojis!
-      composeRef.body(emoji.encode(encrypted).toString());
+      const header = Buffer.from(nuBoxGmail.key).toString('base64');
+      const headerEmoji = emoji.encode(header).toString() + emoji.encode(encrypted).toString();
+      composeRef.body(headerEmoji);
 
       // Grant approval for this user (so he/she can read his own emails).
       const bob = await nuBox.getBobKeys();
@@ -8611,6 +8622,12 @@ var Gmail = function(localJQuery) {
             && api.check.data.is_email_id(obj["1"]);
     };
 
+    api.check.data.is_legacy_email_id = function(id) {
+        return id
+            && typeof id === "string"
+            && /^[0-9a-f]{16,}$/.test(id);
+    };
+
     api.check.data.is_action = function(obj) {
         return api.check.data.is_first_type_action(obj)
             || api.check.data.is_second_type_action(obj);
@@ -10272,16 +10289,121 @@ var Gmail = function(localJQuery) {
     };
 
 
-    api.helper.get.email_source_pre = function(email_id) {
-        if(!email_id && api.check.is_inside_email()) {
-            email_id = api.get.email_id();
+    api.helper.get.legacy_email_id = function(identifier) {
+        if (!identifier) {
+            return null;
+        } else if (api.check.data.is_legacy_email_id(identifier)) {
+            return identifier;
+        } else if (identifier.legacy_email_id) {
+            return identifier.legacy_email_id;
+        } else if (api.check.data.is_email_id(identifier)) {
+            console.warn("GmailJS: Warning! Using new-style ID in method expecting legacy-style IDs! Attempting to resolve via cache, but there's no guarantee this will work!");
+            const emailData = api.cache.emailIdCache[identifier];
+            return emailData && emailData.legacy_email_id;
         }
 
+        // DOMEmail
+        if (identifier.$el && identifier.$el[0]) {
+            identifier = identifier.$el[0]; // fallback to element-lookup.
+        }
+
+        // HTML Element
+        if (identifier.dataset && identifier.dataset.legacyMessageId) {
+            return identifier.dataset.legacyMessageId;
+        }
+
+        return null;
+    };
+
+    api.helper.get.new_email_id = function(identifier) {
+        if (!identifier) {
+            return null;
+        } else if (api.check.data.is_email_id(identifier)) {
+            return identifier;
+        } else if (identifier.id && !identifier.$el) { // ensure to only email_data, not DomEmail!
+            return identifier.id;
+        } else if (api.check.data.is_legacy_email_id(identifier)) {
+            console.warn("GmailJS: Warning! Using legacy-style ID in method expecting new-style IDs! Attempting to resolve via cache, but there's no guarantee this will work!");
+            const emailData = api.cache.emailLegacyIdCache[identifier];
+            return emailData && emailData.id;
+        }
+
+        // DOMEmail
+        if (identifier.$el && identifier.$el[0]) {
+            identifier = identifier.$el[0]; // fallback to element-lookup.
+        }
+
+        // HTML Element
+        if (identifier.dataset && identifier.dataset.messageId) {
+            let id = identifier.dataset.messageId;
+            if (id.indexOf("#") === 0) {
+                id = id.substring(1);
+            }
+
+            return id;
+        }
+
+        return null;
+    };
+
+    api.helper.get.thread_id = function(identifier) {
+        if (!identifier) {
+            return null;
+        } else if (api.check.data.is_thread_id(identifier)) {
+            return identifier;
+        } else if (identifier.thread_id) { // NewEmailData
+            return identifier.thread_id;
+        } else if (api.check.data.is_email_id(identifier)) {
+            console.warn("GmailJS: Warning! Using email-ID in method expecting thread-ID! Attempting to resolve via cache, but there's no guarantee this will work!");
+            const emailData = api.cache.emailIdCache[identifier];
+            return emailData && emailData.thread_id;
+        } else if (api.check.data.is_legacy_email_id(identifier)) {
+            console.warn("GmailJS: Warning! Using legacy-style ID in method expecting thread-ID! Attempting to resolve via cache, but there's no guarantee this will work!");
+            const emailData = api.cache.emailLegacyIdCache[identifier];
+            return emailData && emailData.thread_id;
+        }
+
+        // DOMEmail or DOMThread
+        if (identifier.$el && identifier.$el[0]) {
+            identifier = identifier.$el[0]; // fallback to element-lookup.
+        }
+
+        // HTML Element - Thread
+        if (identifier.dataset && identifier.dataset.threadPermId) {
+            let id = identifier.dataset.threadPermId;
+            if (id.indexOf("#") === 0) {
+                id = id.substring(1);
+            }
+
+            return id;
+        }
+
+        // HTML Element - Email
+        if (identifier.dataset && identifier.dataset.messageId) {
+            let id = identifier.dataset.messageId;
+            if (id.indexOf("#") === 0) {
+                id = id.substring(1);
+            }
+
+            console.warn("GmailJS: Warning! Using DomEmail instance to lookup thread-ID. Attempting to resolve via cache, but there's no guarantee this will work!");
+            const emailData = api.cache.emailIdCache[id];
+            return emailData && emailData.thread_id;
+        }
+
+        return null;
+    };
+
+    api.helper.get.email_source_pre = function(identifier) {
+        if(!identifier && api.check.is_inside_email()) {
+            identifier = api.get.email_id();
+        }
+
+        const email_id = api.helper.get.legacy_email_id(identifier);
         if(!email_id) {
             return null;
+        } else {
+            return window.location.origin + window.location.pathname + "?view=att&th=" + email_id + "&attid=0&disp=comp&safe=1&zw";
         }
-
-        return window.location.origin + window.location.pathname + "?view=att&th=" + email_id + "&attid=0&disp=comp&safe=1&zw";
     };
 
 
@@ -11174,17 +11296,7 @@ var Gmail = function(localJQuery) {
             emailElem = emailElems[emailElems.length - 1];
         }
 
-        // handle case when provided argument is DomEmail.
-        if (emailElem.$el && emailElem.$el[0]) {
-            emailElem = emailElem.$el[0];
-        }
-
-        let declaredId = emailElem.dataset["messageId"];
-        if (declaredId && declaredId.startsWith("#")) {
-            return declaredId.substring(1);
-        } else {
-            return declaredId;
-        }
+        return api.helper.get.new_email_id(emailElem);
     };
 
     /**
@@ -11204,16 +11316,12 @@ var Gmail = function(localJQuery) {
      *
      * @param email_id: new style email id. Legacy IDs not supported. If empty, default to latest in view.
      */
-    api.new.get.email_data = function(email_id) {
-        email_id = email_id || api.new.get.email_id();
+    api.new.get.email_data = function(identifier) {
+        identifier = identifier || api.new.get.email_id();
+        const email_id = api.helper.get.new_email_id(identifier);
 
         if (!email_id) {
             return null;
-        }
-
-        if (!api.check.data.is_email_id(email_id)) {
-            console.warn("GmailJS: Warning! Using legacy-style ID in new Gmail API! There's no guarantee this will work!");
-            return api.cache.emailLegacyIdCache[email_id];
         } else {
             return api.cache.emailIdCache[email_id];
         }
@@ -11224,18 +11332,15 @@ var Gmail = function(localJQuery) {
      *
      * @param thread_id: new style thread id. Legacy IDs not supported. If empty, default to current.
      */
-    api.new.get.thread_data = function(thread_id) {
-        thread_id = thread_id || api.new.get.thread_id();
+    api.new.get.thread_data = function(identifier) {
+        identifier = identifier || api.new.get.thread_id();
+        const thread_id = api.helper.get.thread_id(identifier);
 
         if (!thread_id) {
             return null;
+        } else {
+            return api.cache.threadCache[thread_id];
         }
-
-        if (!api.check.data.is_thread_id(thread_id)) {
-            throw new Error("Legacy email-ID used where new-type thread-id expected!");
-        }
-
-        return api.cache.threadCache[thread_id];
     };
 
     // setup XHR interception as early as possible, to ensure we get all relevant email-data!

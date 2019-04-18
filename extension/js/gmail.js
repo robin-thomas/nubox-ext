@@ -4,33 +4,36 @@ const { Gmail } = require('gmail-js');
 const gmail = new Gmail();
 
 const nuBoxGmail = {
+  key: 'nuBox-robin-thomas',
+
   init: () => {
-    gmail.observe.on('open_email', async function(id, url, body, xhr) {
-      let retries = 0;
-      let data = gmail.new.get.email_data(id);
-      while (++retries <= 5 && data.content_html.trim().length === 0) {
-        data = gmail.new.get.email_data(id);
-      }
+    gmail.observe.on('view_email', (domEmail) => {
+      const intervalId = setInterval(() => {
+        const emailData = gmail.new.get.email_data(domEmail);
 
-      console.log(data);
+        if (emailData !== null &&
+            emailData !== undefined) {
+          const label = emailData.subject;
+          const content = emailData.content_html;
 
-      const label = data.subject;
-      const content = data.content_html;
+          // Nothing to decrypt.
+          if (content.trim().length === 0) {
+            clearInterval(intervalId);
+            return;
+          }
 
-      // Nothing to decrypt.
-      if (content.trim().length === 0) {
-        return;
-      }
+          nuBoxGmail.decryptEmail(label, content).then((html) => {
+            // TODO: detect encrypted emails and try to decrypt them alone.
+            if (html !== null) {
+              domEmail.body(html);
+            }
+          }).catch((err) => {
+            console.log(err);
+          });
 
-      // TODO: detect encrypted emails and try to decrypt them alone.
-
-      try {
-        const html = await nuBoxGmail.decryptEmail(label, content);
-        new gmail.dom.email(data.legacy_email_id).body(html);
-      } catch (err) {
-        console.log(err);
-        // Ignore.
-      }
+          clearInterval(intervalId);
+        }
+      }, 500);
     });
 
     gmail.observe.on('compose', function(compose, type) {
@@ -80,7 +83,13 @@ const nuBoxGmail = {
 
     try {
       // Decrypt the body with NuCypher.
-      const encrypted = emoji.decode(body).toString();
+      const header = Buffer.from(nuBoxGmail.key).toString('base64');
+      const headerEmoji = emoji.encode(header).toString();
+      if (!body.startsWith(headerEmoji)) {
+        console.log('not encrypted email');
+        return null;
+      }
+      const encrypted = emoji.decode(body.substring(headerEmoji.length)).toString();
       const decrypted = await nuBox.decrypt(encrypted, label);
 
       // after decryting, remove the grant.
@@ -116,7 +125,9 @@ const nuBoxGmail = {
       const encrypted = await nuBox.encrypt(body, label);
 
       // Encode the text to emojis!
-      composeRef.body(emoji.encode(encrypted).toString());
+      const header = Buffer.from(nuBoxGmail.key).toString('base64');
+      const headerEmoji = emoji.encode(header).toString() + emoji.encode(encrypted).toString();
+      composeRef.body(headerEmoji);
 
       // Grant approval for this user (so he/she can read his own emails).
       const bob = await nuBox.getBobKeys();
