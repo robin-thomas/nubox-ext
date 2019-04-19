@@ -8,6 +8,24 @@ const gmail = new Gmail();
 const nuBoxGmail = {
   key: 'nuBox-robin-thomas',
 
+  isNuBoxEmail: (body) => {
+    // Retrieve the email body.
+    // Handle Google emoijis (which are loaded only if page is refreshed or email is sent)
+    const $ = cheerio.load(body);
+    if ($('img[goomoji]').length > 0) {
+      body = $('img[goomoji]').map((i, el) => $(el).attr('alt')).get().join('');
+    }
+
+    const header = Buffer.from(nuBoxGmail.key).toString('base64');
+    const headerEmoji = emoji.encode(header).toString();
+    if (!body.startsWith(headerEmoji)) {
+      console.log('not encrypted email');
+      return null;
+    }
+
+    return body.substring(headerEmoji.length);
+  },
+
   init: () => {
     gmail.observe.on('view_email', (domEmail) => {
       const intervalId = setInterval(() => {
@@ -25,7 +43,7 @@ const nuBoxGmail = {
           }
 
           nuBoxGmail.decryptEmail(label, content).then((html) => {
-            // TODO: detect encrypted emails and try to decrypt them alone.
+            // detect encrypted emails and try to decrypt them alone.
             if (html !== null) {
               domEmail.body(html);
             }
@@ -66,6 +84,39 @@ const nuBoxGmail = {
         this.innerHTML = 'Decrypt (nuBox)';
       }, 'nubox-r-c-btn-r');
     });
+
+    gmail.observe.on('send_message', function(url, body, data, xhr) {
+      const body_params = xhr.xhrParams.body_params;
+
+      const intervalId = setInterval(() => {
+        const emailData = gmail.new.get.email_data(data[1]);
+
+        if (emailData !== null &&
+            emailData !== undefined) {
+
+          clearInterval(intervalId);
+
+          // only for nuBox emails.
+          let body = emailData.content_html;
+          body = nuBoxGmail.isNuBoxEmail(body);
+          if (body === null) {
+            return;
+          }
+
+          const html = `Dont forget to grant access for the recipients!
+                        <br /><br />
+                        <div class="form-group">
+                          <label for="nubox-label"><b>Label:</b></label>
+                          <input type="text" class="form-control" id="nubox-label" placeholder="${emailData.subject}" readonly>
+                        </div>`;
+
+          gmail.tools.add_modal_window('Encrypt with nuBox', html,
+            () => {
+                gmail.tools.remove_modal_window();
+            });
+        }
+      }, 500);
+    });
   },
 
   decryptEmail: async (label, body, compose = false) => {
@@ -76,22 +127,14 @@ const nuBoxGmail = {
       throw new Error('Subject cannot be empty!');
     }
 
-    // Retrieve the email body.
-    // Handle Google emoijis (which are loaded only if page is refreshed or email is sent)
-    const $ = cheerio.load(body);
-    if ($('img[goomoji]').length > 0) {
-      body = $('img[goomoji]').map((i, el) => $(el).attr('alt')).get().join('');
-    }
-
     try {
-      // Decrypt the body with NuCypher.
-      const header = Buffer.from(nuBoxGmail.key).toString('base64');
-      const headerEmoji = emoji.encode(header).toString();
-      if (!body.startsWith(headerEmoji)) {
-        console.log('not encrypted email');
+      body = nuBoxGmail.isNuBoxEmail(body);
+      if (body === null) {
         return null;
       }
-      const encrypted = emoji.decode(body.substring(headerEmoji.length)).toString();
+
+      // Decrypt the body with NuCypher.
+      const encrypted = emoji.decode(body).toString();
       const decrypted = await nuBox.decrypt(encrypted, label);
 
       // after decryting, remove the grant.
