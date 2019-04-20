@@ -14,6 +14,11 @@ const injectnuBox = (name, css = false) => {
 injectnuBox('nubox.js');
 injectnuBox('gmail.js');
 injectnuBox(`
+  .nubox-r-c-btn-no-click {
+    pointer-events: none;
+    opacity: .65;
+  }
+
   label {
     display: inline-block;
     margin-bottom: .5rem;

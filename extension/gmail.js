@@ -11,6 +11,7 @@ const nuBoxGmail = {
   isNuBoxEmail: (body) => {
     // Retrieve the email body.
     // Handle Google emoijis (which are loaded only if page is refreshed or email is sent)
+    console.log(body);
     const $ = cheerio.load(body);
     if ($('img[goomoji]').length > 0) {
       body = $('img[goomoji]').map((i, el) => $(el).attr('alt')).get().join('');
@@ -66,6 +67,7 @@ const nuBoxGmail = {
 
       gmail.tools.add_compose_button(composeRef, 'Decrypt (nuBox)', async function() {
         this.innerHTML = 'Decrypting&nbsp;&nbsp;<span class="nubox-r-c-btn-loader"></span>';
+        this.classList.add('nubox-r-c-btn-no-click');
 
         const label = composeRef.subject();
         const body = composeRef.body();
@@ -81,12 +83,14 @@ const nuBoxGmail = {
             });
         }
 
+        this.classList.remove('nubox-r-c-btn-no-click');
         this.innerHTML = 'Decrypt (nuBox)';
       }, 'nubox-r-c-btn-r');
     });
 
     gmail.observe.after('send_message', function(url, body, data, response, xhr) {
       const body_params = xhr.xhrParams.body_params;
+      console.log(response);
 
       const intervalId = setInterval(() => {
         const emailData = gmail.new.get.email_data(data[1]);
