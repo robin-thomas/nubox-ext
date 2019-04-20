@@ -7,6 +7,7 @@
 1. [Who is it for?](#who-is-it-for)
 2. [API (for developers)](#api)
     - [isHostRunning](#ishostrunning)
+    - [approve](#approve)
     - [encrypt](#encrypt)
     - [decrypt](#decrypt)
     - [grant](#grant)
@@ -28,6 +29,13 @@ This API call is used to check whether the nuBox chrome extension is running suc
 await nuBox.isHostRunning();
 ```
 
+###### approve
+This API call is used to request permission from the user to start using the `nuBox` APIs (for this web host). On calling this API, it'll open a popup, like shown below. If user hasn't approved this request, you can only use the `isHostRunning` API.
+```js
+await nuBox.approve();
+```
+![](https://i.ibb.co/RgFJbxN/nubox-approve.png)
+
 ###### encrypt
 This API call is used to encrypt a block of plaintext. Due to [chrome](https://developer.chrome.com/extensions/nativeMessaging#native-messaging-host-protocol) limitations, it's recommended to keep under 256 KB for the plaintext size.
 ```js
@@ -45,12 +53,13 @@ It expects atleast two arguments: `encrypted` and `label`. `ipfs` is optional (w
 ###### grant
 This API call is used to invoke a grant request waiting for user's permission to approve or reject the request.
 ```js
-await nuBox.grant(label, bek, bvk, expiration);
+await nuBox.grant(label, bek, bvk, expiration, noPopup);
 ```
-It expects four arguments: `label`, `bek`, `bvk` and `expiration`.
+It expects atleast four arguments: `label`, `bek`, `bvk` and `expiration`.
 * `bek` is *Bob's encrypting key* (which is a hex-encoded string). It can be retrieved using `getBobKeys` API.
 * `bvk` is *Bob's verifying key* (which is a hex-encoded string). It can be retrieved using `getBobKeys` API.
 * `expiration` is a ISO-8601 formatted datetime string (in the format of `YYYY-MM-DD HH:mm:ss`. For example, **'2019-03-29 22:23:10'**).
+* `noPopup` to disable showing the popup. It's default value is `false` (meaning popup will be shown). This option is only honored if both **Alice** and **Bob** (for whom the grant is requested) are running on the same machine. If not, it's ignored.
 
 ![](http://oi68.tinypic.com/a46ck7.jpg)
 
@@ -59,9 +68,10 @@ It'll open up a **grant** popup for the user to approve. It'll have the sender i
 ###### revoke
 This API call is used to invoke a revoke request waiting for user's permission to approve or reject the request.
 ```js
-await nuBox.revoke(label, bvk);
+await nuBox.revoke(label, bvk, noPopup);
 ```
-It expects two arguments: `label` and `bvk` (Bob's verifying key).
+It expects aleast two arguments: `label` and `bvk` (Bob's verifying key).
+* `noPopup` to disable showing the popup. It's default value is `false` (meaning popup will be shown). This option is only honored if both **Alice** and **Bob** (for whom the revoke is requested) are running on the same machine. If not, it's ignored.
 
 ![](http://oi65.tinypic.com/mb7b6u.jpg)
 
