@@ -33,12 +33,14 @@ const nuBoxGmail = {
 
         if (emailData !== null &&
             emailData !== undefined) {
+
+          clearInterval(intervalId);
+
           const label = emailData.subject;
           const content = emailData.content_html;
 
           // Nothing to decrypt.
           if (content.trim().length === 0) {
-            clearInterval(intervalId);
             return;
           }
 
@@ -50,8 +52,6 @@ const nuBoxGmail = {
           }).catch((err) => {
             console.log(err);
           });
-
-          clearInterval(intervalId);
         }
       }, 500);
     });
@@ -85,7 +85,7 @@ const nuBoxGmail = {
       }, 'nubox-r-c-btn-r');
     });
 
-    gmail.observe.on('send_message', function(url, body, data, xhr) {
+    gmail.observe.after('send_message', function(url, body, data, response, xhr) {
       const body_params = xhr.xhrParams.body_params;
 
       const intervalId = setInterval(() => {
