@@ -15,6 +15,7 @@
     - [getBobKeys](#getbobkeys)
 3. [Installation](#installation)
 4. [Popup UI (for users)](#popup-ui)
+5. [GMail support](#gmail-support)
 5. [Debugging issues](#debugging-issues)
 
 # Who is it for?
