@@ -130,6 +130,15 @@ It has the following features:
   ![](http://oi67.tinypic.com/2w3una9.jpg)
   ![](http://oi65.tinypic.com/9sxnnq.jpg)
 
+# GMail support
+Forget the insane installation setup of encrypted emails and PGP! With nuBox, you can have **1-click encrypt** and **auto-decrypt**! Zero installation setup too!
+
+nuBox auto adds the **Encrypt** and **Decrypt** buttons for each gmail compose window. Clicking on *Encrypt* button will automatically encrypt the email body with NuCypher network and then encode them into emojis! When you try to open the encrypted email, nuBox will automatically decode the emojis and then decrypts it using NuCypher (decrypt will fail if user is not granted permission). Voila!
+
+You can use the nuBox popup UI to grant permissions for multiple recipients. The *label* used is the email subject.
+
+![](https://i.ibb.co/tcqjSyQ/nubox-gmail.png)
+
 # Debugging issues
 * *nuBox* is tested only on version 3.6.0 of Python. Any different version might lead to unexpected outputs.
 * If your *Python* binary is not stored at `/usr/bin/python3.6`, make a symmlink to that location so that the host can run.
