@@ -3,6 +3,11 @@
 
 ![](https://img.shields.io/badge/ubuntu-16.04-brightgreen.svg) [![Python 3.6](https://img.shields.io/badge/python-3.6-blue.svg)](https://www.python.org/downloads/release/python-360/) [![License](https://img.shields.io/badge/license-MIT-green.svg)](https://opensource.org/licenses/MIT)
 
+# Demo videos
+* [nuBox as extension](https://www.youtube.com/watch?v=Rw4c_Uz5aAU)
+* [GMail support](https://www.youtube.com/watch?v=Rw4c_Uz5aAU)
+* [Dropbox-like support](https://www.youtube.com/watch?v=Rw4c_Uz5aAU)
+
 # Table of Contents
 1. [Who is it for?](#who-is-it-for)
 2. [API (for developers)](#api)
@@ -154,6 +159,13 @@ Forget storing your files on any server! With nuBox, you can **securely** store 
 * Share files with anyone securely.
 * Extensive **Logging** facility - see all the requests (inputs, output, timestamp) coming in.
 * Supported file operations - *rename*, *delete*, *download*, *share*, *file info*.
+* Check if extension is able to connect to NuCypher network.
+
+![](https://i.ibb.co/frp38sL/nubox-dropbox-1.png)
+![](https://i.ibb.co/3fL85JB/nubox-dropbox-2.png)
+![](https://i.ibb.co/4dWJzj7/nubox-dropbox-3.png)
+![](https://i.ibb.co/vP4ypXc/nubox-dropbox-4.png)
+![](https://i.ibb.co/5M1W0fk/nubox-dropbox-5.png)
 
 # Debugging issues
 * *nuBox* is tested only on version 3.6.0 of Python. Any different version might lead to unexpected outputs.
