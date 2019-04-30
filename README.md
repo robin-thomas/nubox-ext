@@ -6,7 +6,7 @@
 # Demo videos
 * [nuBox extension](https://www.youtube.com/watch?v=Rw4c_Uz5aAU)
 * [GMail support](https://www.youtube.com/watch?v=cMYjGT6t86o)
-* [Dropbox-like support](https://www.youtube.com/watch?v=Rw4c_Uz5aAU)
+* [Dropbox-like support](https://www.youtube.com/watch?v=fBeYXWPVtO4)
 
 # Table of Contents
 1. [Who is it for?](#who-is-it-for)
