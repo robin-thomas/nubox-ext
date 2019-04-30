@@ -16,7 +16,8 @@
 3. [Installation](#installation)
 4. [Popup UI (for users)](#popup-ui)
 5. [GMail support](#gmail-support)
-5. [Debugging issues](#debugging-issues)
+6. [Dropbox-like support](#dropbox-like-support)
+7. [Debugging issues](#debugging-issues)
 
 # Who is it for?
 [NuCypher](https://www.nucypher.com/) is the go-to solution for anyone aiming to build privacy-rich applications on the blockchain. But it lacks a JavaScript library. Moreover, their codebase is written in Python, making it difficult to port over to the web side. **nuBox** chrome extension can solve these issues without you ever having to know about NuCypher at all! It even has an insanely simple API which it injects onto every website! It even comes with support for **IPFS**!
