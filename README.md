@@ -21,6 +21,8 @@
 # Who is it for?
 [NuCypher](https://www.nucypher.com/) is the go-to solution for anyone aiming to build privacy-rich applications on the blockchain. But it lacks a JavaScript library. Moreover, their codebase is written in Python, making it difficult to port over to the web side. **nuBox** chrome extension can solve these issues without you ever having to know about NuCypher at all! It even has an insanely simple API which it injects onto every website! It even comes with support for **IPFS**!
 
+Moroever, it now comes with **inbuilt GMail** support (forget all about the insance email encryption setup and PGP!), and you can even save and share your files without ever having to visit any website!
+
 # API:
 All API calls are available under **nuBox** namespace. All of them supports *[Promises](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise)*.
 
@@ -139,6 +141,18 @@ nuBox auto adds the **Encrypt** and **Decrypt** buttons for each gmail compose w
 You can use the nuBox popup UI to grant permissions for multiple recipients. The *label* used is the email subject.
 
 ![](https://i.ibb.co/tcqjSyQ/nubox-gmail.png)
+
+# Dropbox-like support
+Forget storing your files on any server! With nuBox, you can **securely** store your files on **IPFS** and store the IPFS hashes on Chrome sync, meaning you can even access it from a different machine! Moreover you can share the files with anyone you like, and they can decrypt the files and download it!
+
+##### Features:
+* **No websites or servers!**
+* Upload files, encrypt them and save it on IPFS
+* Support large files, by storing splitting the files and storing them in chunks (meaning different IPFS hashes)
+* IPFS hashes are stored in Chrome sync and hence can be accessed on any machine having Chrome browser with nuBox extension.
+* Share files with anyone securely.
+* Extensive **Logging** facility - see all the requests (inputs, output, timestamp) coming in.
+* Supported file operations - *rename*, *delete*, *download*, *share*, *file info*.
 
 # Debugging issues
 * *nuBox* is tested only on version 3.6.0 of Python. Any different version might lead to unexpected outputs.
