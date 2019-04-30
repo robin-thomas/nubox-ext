@@ -160,6 +160,7 @@ Forget storing your files on any server! With nuBox, you can **securely** store 
 * Extensive **Logging** facility - see all the requests (inputs, output, timestamp) coming in.
 * Supported file operations - *rename*, *delete*, *download*, *share*, *file info*.
 * Check if extension is able to connect to NuCypher network.
+* Supports uploading multiple files of same file name.
 
 ![](https://i.ibb.co/frp38sL/nubox-dropbox-1.png)
 ![](https://i.ibb.co/3fL85JB/nubox-dropbox-2.png)
