@@ -4,8 +4,8 @@
 ![](https://img.shields.io/badge/ubuntu-16.04-brightgreen.svg) [![Python 3.6](https://img.shields.io/badge/python-3.6-blue.svg)](https://www.python.org/downloads/release/python-360/) [![License](https://img.shields.io/badge/license-MIT-green.svg)](https://opensource.org/licenses/MIT)
 
 # Demo videos
-* [nuBox as extension](https://www.youtube.com/watch?v=Rw4c_Uz5aAU)
-* [GMail support](https://www.youtube.com/watch?v=Rw4c_Uz5aAU)
+* [nuBox extension](https://www.youtube.com/watch?v=Rw4c_Uz5aAU)
+* [GMail support](https://www.youtube.com/watch?v=cMYjGT6t86o)
 * [Dropbox-like support](https://www.youtube.com/watch?v=Rw4c_Uz5aAU)
 
 # Table of Contents
