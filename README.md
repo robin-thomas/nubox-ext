@@ -100,7 +100,10 @@ await nuBox.getBobKeys();
 
 Run the below step to install the *nuBox* chrome **host**.
 ```sh
+$ git clone git@github.com:robin-thomas/nubox-ext
 $ cd nubox-ext
+$ git submodule init
+$ git submodule update --remote --recursive
 $ sudo docker-compose build
 $ sudo docker-compose up -d
 $ ./host/install_chrome.sh
