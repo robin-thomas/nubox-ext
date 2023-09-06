@@ -3,7 +3,7 @@
 
 ![](https://img.shields.io/badge/ubuntu-16.04-brightgreen.svg) [![Python 3.6](https://img.shields.io/badge/python-3.6-blue.svg)](https://www.python.org/downloads/release/python-360/) [![License](https://img.shields.io/badge/license-MIT-green.svg)](https://opensource.org/licenses/MIT)
 
-## [Winner of NuCypher + CoinList hackathon!!](https://coinlist.co/build/nucypher/votes)
+## [Winner of NuCypher + CoinList hackathon!!](https://coinlist.co/build/nucypher/projects/8d82f022-9f63-4c2e-9fe7-cee7f604153c)
 ## [Winner of Ethereal Hackathon - NuCypher bounty + runner up to Ethereal Best in Show prize!!](https://gitcoin.co/blog/the-results-msft-gitcoins-ethereal-hackathon)
 
 # Demo videos
